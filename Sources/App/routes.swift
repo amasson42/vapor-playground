@@ -9,6 +9,9 @@ func routes(_ app: Application) throws {
     app.get("hello") { req -> String in
         return "Hello, world!"
     }
-
-    try app.register(collection: TodoController())
+    
+    let api = app.grouped("api")
+    
+    try api.register(collection: AcronymsController())
+    
 }
