@@ -4,17 +4,17 @@ import Fluent
 struct AcronymsController: RouteCollection {
     
     func boot(routes: RoutesBuilder) throws {
-        let acronyms = routes.grouped("acronyms")
+        let group = routes.grouped("acronyms")
         
-        acronyms.post(use: handlePost)
-        acronyms.get(use: handleGet)
-        acronyms.get(":acronymID", use: handleGetOne)
-        acronyms.get("search", use: handleGetSearch)
-        acronyms.get("first", use: handleGetFirst)
-        acronyms.get("sorted", use: handleGetSorted)
-        acronyms.get("sorted", "first", use: handleGetSortedFirst)
-        acronyms.put(":acronymID", use: handlePutOne)
-        acronyms.delete(":acronymID", use: handleDeleteOne)
+        group.post(use: handlePost)
+        group.get(use: handleGet)
+        group.get(":acronymID", use: handleGetOne)
+        group.get("search", use: handleGetSearch)
+        group.get("first", use: handleGetFirst)
+        group.get("sorted", use: handleGetSorted)
+        group.get("sorted", "first", use: handleGetSortedFirst)
+        group.put(":acronymID", use: handlePutOne)
+        group.delete(":acronymID", use: handleDeleteOne)
     }
     
     func handlePost(_ req: Request) throws -> EventLoopFuture<Acronym> {

@@ -13,5 +13,6 @@ func routes(_ app: Application) throws {
     let api = app.grouped("api")
     
     try api.register(collection: AcronymsController())
+    try api.register(collection: UsersController())
     
 }
