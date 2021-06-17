@@ -1,7 +1,7 @@
 import Vapor
 import Fluent
 
-final class User: Model {
+final class User: Model, Content {
     static let schema = "users"
     
     @ID
@@ -13,14 +13,13 @@ final class User: Model {
     @Field(key: "username")
     var username: String
     
+    @Children(for: \.$user)
+    var acronyms: [Acronym]
+    
     init() {}
     
     init(id: UUID? = nil, name: String, username: String) {
         self.name = name
         self.username = username
     }
-}
-
-extension User: Content {
-    
 }

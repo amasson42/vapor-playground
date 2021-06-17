@@ -13,16 +13,21 @@ struct AcronymsController: RouteCollection {
         group.get("first", use: handleGetFirst)
         group.get("sorted", use: handleGetSorted)
         group.get("sorted", "first", use: handleGetSortedFirst)
+        group.get(":acronymID", "user", use: handleGetUser)
         group.put(":acronymID", use: handlePutOne)
         group.delete(":acronymID", use: handleDeleteOne)
+        group.post(":acronymID", "categories", ":categoryID", use: handlePostAddCategory)
+        group.get(":acronymID", "categories", use: handleGetCategories)
+        group.delete(":acronymID", "categories", use: handleDeleteCategories)
     }
     
     func handlePost(_ req: Request) throws -> EventLoopFuture<Acronym> {
-        let acronym = try req.content.decode(Acronym.self)
+        let data = try req.content.decode(CreateAcronymData.self)
         
-        return acronym.save(on: req.db).map {
-            acronym
-        }
+        let acronym = Acronym(short: data.short,
+                              long: data.long,
+                              userID: data.userID)
+        return acronym.save(on: req.db).map { acronym }
     }
     
     func handleGet(_ req: Request) -> EventLoopFuture<[Acronym]> {
@@ -65,17 +70,24 @@ struct AcronymsController: RouteCollection {
             .unwrap(or: Abort(.notFound))
     }
     
+    func handleGetUser(_ req: Request) -> EventLoopFuture<User> {
+        Acronym.find(req.parameters.get("acronymID"), on: req.db)
+            .unwrap(or: Abort(.notFound))
+            .flatMap { acronym in
+                acronym.$user.get(on: req.db)
+            }
+    }
+    
     func handlePutOne(_ req: Request) throws -> EventLoopFuture<Acronym> {
-        let updatedAcronym = try req.content.decode(Acronym.self)
+        let updateData = try req.content.decode(CreateAcronymData.self)
         
         return Acronym.find(req.parameters.get("acronymID"), on: req.db)
             .unwrap(or: Abort(.notFound))
             .flatMap { acronym in
-                acronym.short = updatedAcronym.short
-                acronym.long = updatedAcronym.long
-                return updatedAcronym.save(on: req.db).map {
-                    acronym
-                }
+                acronym.short = updateData.short
+                acronym.long = updateData.long
+                acronym.$user.id = updateData.userID
+                return acronym.save(on: req.db).map { acronym }
             }
     }
     
@@ -88,4 +100,50 @@ struct AcronymsController: RouteCollection {
             }
     }
     
+    func handlePostAddCategory(_ req: Request) -> EventLoopFuture<HTTPStatus> {
+        let acronymQuery = Acronym.find(req.parameters.get("acronymID"), on: req.db)
+            .unwrap(or: Abort(.notFound))
+        
+        let categoryQuery = Category.find(req.parameters.get("categoryID"), on: req.db)
+            .unwrap(or: Abort(.notFound))
+        
+        return acronymQuery.and(categoryQuery)
+            .flatMap {
+                acronym, category in
+                acronym
+                    .$categories
+                    .attach(category, on: req.db)
+                    .transform(to: .created)
+            }
+    }
+    
+    func handleGetCategories(_ req: Request) -> EventLoopFuture<[Category]> {
+        Acronym.find(req.parameters.get("acronymID"), on: req.db)
+            .unwrap(or: Abort(.notFound))
+            .flatMap { acronym in
+                acronym.$categories.query(on: req.db).all()
+            }
+    }
+    
+    func handleDeleteCategories(_ req: Request) -> EventLoopFuture<HTTPStatus> {
+        let acronymQuery = Acronym.find(req.parameters.get("acronymID"), on: req.db)
+            .unwrap(or: Abort(.notFound))
+        let categoryQuery = Category.find(req.parameters.get("categoryID"), on: req.db)
+            .unwrap(or: Abort(.notFound))
+        
+        return acronymQuery.and(categoryQuery)
+            .flatMap { acronym, category in
+                acronym
+                    .$categories
+                    .detach(category, on: req.db)
+                    .transform(to: .noContent)
+            }
+    }
+    
+}
+
+struct CreateAcronymData: Content {
+    let short: String
+    let long: String
+    let userID: User.IDValue
 }
