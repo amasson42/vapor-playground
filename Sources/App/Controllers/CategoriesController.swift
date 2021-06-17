@@ -9,6 +9,7 @@ struct CategoriesController: RouteCollection {
         group.get(use: handleGet)
         group.get(":categoryID", use: handleGetOne)
         group.get("pivots", use: handleGetPivots)
+        group.get(":categoryID", "acronyms", use: handleGetAcronyms)
     }
     
     func handlePost(_ req: Request) throws -> EventLoopFuture<Category> {

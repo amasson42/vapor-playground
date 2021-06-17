@@ -18,7 +18,7 @@ struct AcronymsController: RouteCollection {
         group.delete(":acronymID", use: handleDeleteOne)
         group.post(":acronymID", "categories", ":categoryID", use: handlePostAddCategory)
         group.get(":acronymID", "categories", use: handleGetCategories)
-        group.delete(":acronymID", "categories", use: handleDeleteCategories)
+        group.delete(":acronymID", "categories", ":categoryID", use: handleDeleteCategories)
     }
     
     func handlePost(_ req: Request) throws -> EventLoopFuture<Acronym> {

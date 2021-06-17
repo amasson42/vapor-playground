@@ -1,6 +1,6 @@
 import Fluent
 import FluentPostgresDriver
-import FluentSQLiteDriver
+//import FluentSQLiteDriver
 import FluentMySQLDriver
 import FluentMongoDriver
 import Vapor
@@ -12,26 +12,34 @@ public func configure(_ app: Application) throws {
     
     // MARK: Use database
     
-    app.databases.use(.postgres(
-        hostname: Environment.tilEnv.DATABASE_HOST,
-        port: Int(Environment.tilEnv.DATABASE_PORT)!,
-        username: Environment.tilEnv.DATABASE_USERNAME,
-        password: Environment.tilEnv.DATABASE_PASSWORD,
-        database: Environment.tilEnv.DATABASE_NAME
-    ), as: .psql)
+    if (app.environment == .testing) {
+        app.databases.use(.postgres(
+            hostname: "localhost",
+            port: Environment.get("DATABASE_PORT")?.toInt ?? 5433,
+            username: "vapor_username",
+            password: "vapor_password",
+            database: "vapor-test"
+        ), as: .psql)
+    } else {
+        app.databases.use(.postgres(
+            hostname: Environment.tilEnv.DATABASE_HOST,
+            port: Environment.tilEnv.DATABASE_PORT,
+            username: Environment.tilEnv.DATABASE_USERNAME,
+            password: Environment.tilEnv.DATABASE_PASSWORD,
+            database: Environment.tilEnv.DATABASE_NAME
+        ), as: .psql)
+    }
     
 //    app.databases.use(.mysql(
-//        hostname: Environment.get("DATABASE_HOST") ?? "localhost",
-//        username: Environment.get("DATABASE_USERNAME")
-//            ?? "vapor_username",
-//        password: Environment.get("DATABASE_PASSWORD")
-//            ?? "vapor_password",
-//        database: Environment.get("DATABASE_NAME")
-//            ?? "vapor_database",
+//        hostname: Environment.tilEnv.DATABASE_HOST,
+//        port: Environment.tilEnv.DATABASE_PORT,
+//        username: Environment.tilEnv.DATABASE_USERNAME,
+//        password: Environment.tilEnv.DATABASE_PASSWORD,
+//        database: Environment.tilEnv.DATABASE_NAME,
 //        tlsConfiguration: .forClient(certificateVerification: .none)
 //    ), as: .mysql)
     
-//    try app.databases.use(.mongo(connectionString: "mongodb://localhost:27017/vapor"),
+//    try app.databases.use(.mongo(connectionString: "mongodb://\(Environment.tilEnv.DATABASE_HOST):\(Environment.tilEnv.DATABASE_PORT)/\(Environment.tilEnv.DATABASE_NAME)"),
 //                              as: .mongo)
     
 //    app.databases.use(.sqlite(.file("db.sqlite")), as: .sqlite)
