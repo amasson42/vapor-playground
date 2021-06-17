@@ -2,10 +2,7 @@ import Fluent
 import Vapor
 
 func routes(_ app: Application) throws {
-    app.get { req in
-        return "It works!"
-    }
-
+    
     app.get("hello", ":name", ":time") { req -> EventLoopFuture<String> in
         let promise = req.eventLoop.makePromise(of: String.self)
         let name = req.parameters.get("name")!
@@ -21,6 +18,8 @@ func routes(_ app: Application) throws {
         
         return promise.futureResult
     }
+    
+    try app.register(collection: WebsiteController())
     
     let api = app.grouped("api")
     

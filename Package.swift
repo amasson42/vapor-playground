@@ -14,17 +14,19 @@ let package = Package(
 //        .package(url: "https://github.com/vapor/fluent-sqlite-driver.git", from: "4.0.0"),
         .package(url: "https://github.com/vapor/fluent-mysql-driver.git", from: "4.0.0"),
         .package(url: "https://github.com/vapor/fluent-mongo-driver.git", from: "1.0.0"),
+        .package(url: "https://github.com/vapor/leaf.git", from: "4.0.0")
     ],
     targets: [
         .target(
             name: "App",
             dependencies: [
+                .product(name: "Vapor", package: "vapor"),
                 .product(name: "Fluent", package: "fluent"),
                 .product(name: "FluentPostgresDriver", package: "fluent-postgres-driver"),
 //                .product(name: "FluentSQLiteDriver", package: "fluent-sqlite-driver"),
                 .product(name: "FluentMySQLDriver", package: "fluent-mysql-driver"),
                 .product(name: "FluentMongoDriver", package: "fluent-mongo-driver"),
-                .product(name: "Vapor", package: "vapor")
+                .product(name: "Leaf", package: "leaf")
             ],
             swiftSettings: [
                 // Enable better optimizations when building in Release configuration. Despite the use of
