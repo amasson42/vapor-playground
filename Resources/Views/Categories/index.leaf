@@ -1,0 +1,29 @@
+#extend("base"):
+#export("content"):
+
+<h1>Categories</h1>
+
+#if(categories):
+<table class="table table-bordered table-hover">
+    <thead class="thead-light">
+        <tr>
+            <th>Name</th>
+        </tr>
+    </thead>
+    <tbody>
+        #for(category in categories):
+        <tr>
+            <td>
+                <a href="/categories/#(category.id)">#(category.name)</a>
+            </td>
+        </tr>
+        #endfor
+    </tbody>
+</table>
+
+#else:
+<h2>No categories yet!</h2>
+#endif
+
+#endexport
+#endextend

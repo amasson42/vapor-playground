@@ -1,0 +1,14 @@
+#extend("base"):
+#export("content"):
+
+<h1>Acronyms</h1>
+
+<a href="/acronyms/create" class="nav-link">
+    Create An Acronym
+</a>
+
+#if(acronyms):
+#extend("Acronyms/acronymsTable")
+#endif
+#endexport
+#endextend

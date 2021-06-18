@@ -1,14 +1,20 @@
+import Vapor
 import Fluent
 import FluentPostgresDriver
 //import FluentSQLiteDriver
 import FluentMySQLDriver
 import FluentMongoDriver
-import Vapor
+import Leaf
 
 // configures your application
 public func configure(_ app: Application) throws {
     // uncomment to serve files from /Public folder
     // app.middleware.use(FileMiddleware(publicDirectory: app.directory.publicDirectory))
+    
+    app.logger.logLevel = .debug
+    
+    app.middleware.use(FileMiddleware(publicDirectory: app.directory.publicDirectory))
+    app.logger.debug("Using Middleware directory: \(app.directory.publicDirectory)")
     
     // MARK: Use database
     
@@ -45,6 +51,8 @@ public func configure(_ app: Application) throws {
 //    app.databases.use(.sqlite(.file("db.sqlite")), as: .sqlite)
     
     
+    // MARK: Migration scripts
+    
     /// The order of this migrations call matter.
     /// It will create database tables and if there is relationships, then they have to exist in correct order
     app.migrations.add(CreateUser())
@@ -52,9 +60,11 @@ public func configure(_ app: Application) throws {
     app.migrations.add(CreateCategory())
     app.migrations.add(CreateAcronymCategoryPivot())
     
-    app.logger.logLevel = .debug
-    
     try app.autoMigrate().wait()
+    
+    // MARK: View rendering
+    
+    app.views.use(.leaf)
     
     // register routes
     try routes(app)

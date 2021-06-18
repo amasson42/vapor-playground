@@ -1,12 +1,8 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-
-  <title>#(title)</title>
-</head>
-
-<body>
-  <h1>#(title)</h1>
-</body>
-</html>
+#extend("base"):
+#export("content"):
+<img src="/assets/images/logo.png" class="mx-auto d-block" alt="TIL Logo" />
+<h1>Welcome to TilApp</h1>
+<a href="/acronyms">Acronyms</a>
+<a href="/users">Users</a>
+#endexport
+#endextend
