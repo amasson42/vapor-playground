@@ -1,8 +1,14 @@
 #extend("base"):
+
+#export("stylesheet"): #endexport
+
 #export("content"):
 <img src="/assets/images/logo.png" class="mx-auto d-block" alt="TIL Logo" />
 <h1>Welcome to TilApp</h1>
 <a href="/acronyms">Acronyms</a>
 <a href="/users">Users</a>
 #endexport
+
+#export("scripts"): #endexport
+
 #endextend

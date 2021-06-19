@@ -1,4 +1,7 @@
 #extend("base"):
+
+#export("stylesheet"): #endexport
+
 #export("content"):
 <h1>#(acronym.short)</h1>
 <h2>#(acronym.long)</h2>
@@ -12,10 +15,17 @@
 
 #if(count(categories) > 0):
 <h3>Categories:</h3>
-#for(category in categories):
-<a href="/categories/#(category.id)">#(category.name)</a>
-#endfor
+<ul>
+    #for(category in categories):
+    <li>
+        <a href="/categories/#(category.id)">#(category.name)</a>
+    </li>
+    #endfor
+</ul>
 #endif
 
 #endexport
+
+#export("scripts"): #endexport
+
 #endextend

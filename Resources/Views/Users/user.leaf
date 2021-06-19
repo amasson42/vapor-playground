@@ -1,4 +1,7 @@
 #extend("base"):
+
+#export("stylesheet"): #endexport
+
 #export("content"):
 
 <h1>#(user.name)</h1>
@@ -6,4 +9,7 @@
 #extend("Acronyms/acronymsTable")
 
 #endexport
+
+#export("scripts"): #endexport
+
 #endextend

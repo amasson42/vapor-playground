@@ -17,10 +17,10 @@ struct HomeWebController: RouteCollection {
 
 protocol BaseContext: Encodable {
     var title: String { get }
+    var useSelect2: Bool { get }
 }
 
 extension BaseContext {
-    var title: String {
-        "Title"
-    }
+    var title: String { "Title" }
+    var useSelect2: Bool { false }
 }

@@ -1,4 +1,7 @@
 #extend("base"):
+
+#export("stylesheet"): #endexport
+
 #export("content"):
 
 <h1>Acronyms</h1>
@@ -11,4 +14,7 @@
 #extend("Acronyms/acronymsTable")
 #endif
 #endexport
+
+#export("scripts"): #endexport
+
 #endextend

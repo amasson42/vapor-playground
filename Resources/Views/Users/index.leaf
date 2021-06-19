@@ -1,4 +1,7 @@
 #extend("base"):
+
+#export("stylesheet"): #endexport
+
 #export("content"):
 
 <h1>Users</h1>
@@ -30,4 +33,7 @@
 #endif
 
 #endexport
+
+#export("scripts"): #endexport
+
 #endextend

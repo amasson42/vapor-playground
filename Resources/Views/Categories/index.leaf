@@ -1,4 +1,7 @@
 #extend("base"):
+
+#export("stylesheet"): #endexport
+
 #export("content"):
 
 <h1>Categories</h1>
@@ -26,4 +29,7 @@
 #endif
 
 #endexport
+
+#export("scripts"): #endexport
+
 #endextend
