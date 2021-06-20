@@ -1,7 +1,7 @@
 import Vapor
 import Fluent
 
-final class AcronymCategoryPivot: Model {
+final class AcronymCategoryPivot: Model, Content {
     static let schema = "acronym-category-pivot"
     
     @ID
@@ -24,5 +24,3 @@ final class AcronymCategoryPivot: Model {
     }
     
 }
-
-extension AcronymCategoryPivot: Content {}

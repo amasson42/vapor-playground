@@ -5,11 +5,16 @@ struct CategoriesController: RouteCollection {
     
     func boot(routes: RoutesBuilder) throws {
         let group = routes.grouped("categories")
-        group.post(use: handlePost)
         group.get(use: handleGet)
         group.get(":categoryID", use: handleGetOne)
         group.get("pivots", use: handleGetPivots)
         group.get(":categoryID", "acronyms", use: handleGetAcronyms)
+        
+        let tokenAuthMiddleware = Token.authenticator()
+        let guardAuthMiddleware = User.guardMiddleware()
+        let tokenAuthGroup = group.grouped(tokenAuthMiddleware, guardAuthMiddleware)
+        
+        tokenAuthGroup.post(use: handlePost)
     }
     
     func handlePost(_ req: Request) throws -> EventLoopFuture<Category> {

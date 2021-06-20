@@ -6,9 +6,11 @@ struct CreateAcronymCategoryPivot: Migration {
         database.schema(AcronymCategoryPivot.schema)
             .id()
             .field("acronymID", .uuid, .required,
-                   .references(Acronym.schema, "id", onDelete: .cascade))
+                   .references(Acronym.schema, "id",
+                               onDelete: .cascade))
             .field("categoryID", .uuid, .required,
-                   .references(Category.schema, "id", onDelete: .cascade))
+                   .references(Category.schema, "id",
+                               onDelete: .cascade))
             .create()
     }
     

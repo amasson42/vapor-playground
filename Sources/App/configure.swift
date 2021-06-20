@@ -56,6 +56,8 @@ public func configure(_ app: Application) throws {
     /// The order of this migrations call matter.
     /// It will create database tables and if there is relationships, then they have to exist in correct order
     app.migrations.add(CreateUser())
+    app.migrations.add(CreateAdminUser())
+    app.migrations.add(CreateToken())
     app.migrations.add(CreateAcronym())
     app.migrations.add(CreateCategory())
     app.migrations.add(CreateAcronymCategoryPivot())

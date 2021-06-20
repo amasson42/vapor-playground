@@ -38,7 +38,7 @@ kill:
 # Execute the unit tests with the services dependencies
 test: build
 	docker-compose -f testing.docker-compose.yml up -d db-test
-	swift test
+	@swift test && echo TEST SUCCESS || echo TEST FAILED
 	docker-compose -f testing.docker-compose.yml down -v
 
 # Execute the unit tests in a docker image with services dependencies
