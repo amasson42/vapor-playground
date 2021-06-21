@@ -19,17 +19,19 @@ func routes(_ app: Application) throws {
         return promise.futureResult
     }
     
+    // MARK: Api
     let api = app.grouped("api")
     
     try api.register(collection: AcronymsController())
     try api.register(collection: UsersController())
     try api.register(collection: CategoriesController())
     
-    let web = app.grouped("")
+    // MARK: Web
     
-    try web.register(collection: HomeWebController())
-    try web.register(collection: AcronymsWebController())
-    try web.register(collection: UsersWebController())
-    try web.register(collection: CategoriesWebController())
+    try app.register(collection: WebsiteController())
+//    try app.register(collection: HomeWebController())
+//    try app.register(collection: AcronymsWebController())
+//    try app.register(collection: UsersWebController())
+//    try app.register(collection: CategoriesWebController())
     
 }

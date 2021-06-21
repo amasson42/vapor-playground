@@ -42,6 +42,6 @@ test: build
 
 # Execute the unit tests in a docker image with services dependencies
 test_docker:
-	docker-compose --profile testing up --abort-on-container-exit app-test
+	docker-compose --profile testing up --build --abort-on-container-exit app-test
 
 .PHONY: all build $(NAME) clean fclean run kill test test_docker

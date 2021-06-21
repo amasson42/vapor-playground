@@ -5,27 +5,30 @@ import Leaf
 struct AcronymsWebController: RouteCollection {
     
     func boot(routes: RoutesBuilder) throws {
-        let group = routes.grouped("acronyms")
+        let authRoutes = routes.makeAuthRoutes(controllerName: "acronyms")
         
-        group.get(use: indexHandler)
-        group.get(":acronymID", use: acronymHandler)
-        group.get("create", use: createAcronymHandler)
-        group.post("create", use: createAcronymPostHandler)
-        group.get(":acronymID", "edit", use: editAcronymHandler)
-        group.post(":acronymID", "edit", use: editAcronymPostHandler)
-        group.post(":acronymID", "delete", use: deleteAcronymHandler)
+        authRoutes.group.get(use: indexHandler)
+        authRoutes.authSession.get(":acronymID", use: acronymHandler)
+        authRoutes.protected.get("create", use: createAcronymHandler)
+        authRoutes.protected.post("create", use: createAcronymPostHandler)
+        authRoutes.protected.get(":acronymID", "edit", use: editAcronymHandler)
+        authRoutes.protected.post(":acronymID", "edit", use: editAcronymPostHandler)
+        authRoutes.protected.post(":acronymID", "delete", use: deleteAcronymHandler)
         
     }
     
     // path: /acronyms
     struct IndexContext: BaseContext {
         let title: String
+        let userLoggedIn: Bool
         var acronyms: [Acronym]?
     }
     
     func indexHandler(_ req: Request) -> EventLoopFuture<View> {
         
-        var context = IndexContext(title: "Acronyms")
+        var context = IndexContext(
+            title: "Acronyms",
+            userLoggedIn: req.auth.has(User.self))
         
         return Acronym.query(on: req.db)
             .sort(\.$short)
@@ -40,6 +43,7 @@ struct AcronymsWebController: RouteCollection {
     // path: /acronyms/:acronymID
     struct AcronymContext: BaseContext {
         let title: String
+        let userLoggedIn: Bool
         let acronym: Acronym
         let user: User
         let categories: [Category]
@@ -55,6 +59,7 @@ struct AcronymsWebController: RouteCollection {
                     .flatMap { user, categories in
                         let context = AcronymContext(
                             title: acronym.short,
+                            userLoggedIn: req.auth.has(User.self),
                             acronym: acronym,
                             user: user,
                             categories: categories)
@@ -64,30 +69,49 @@ struct AcronymsWebController: RouteCollection {
     }
     
     struct CreateAcronymContext: BaseContext {
-        let useSelect2 = true
         let title = "Create An Acronym"
-        let users: [User]
+        let userLoggedIn: Bool
+        let useSelect2 = true
         let editing = false
+        let csrfToken: String
     }
     
     func createAcronymHandler(_ req: Request) -> EventLoopFuture<View> {
         
-        return User.query(on: req.db).all().flatMap { users in
-            let context = CreateAcronymContext(users: users)
-            
-            return req.view.render("Acronyms/createAcronym", context)
-        }
+        let token = [UInt8].random(count: 16).base64
         
+        let context = CreateAcronymContext(
+            userLoggedIn: req.auth.has(User.self),
+            csrfToken: token
+        )
+        req.session.data["CSRF_TOKEN"] = token
+        return req.view.render("Acronyms/createAcronym", context)
+    }
+    
+    struct CreateAcronymFormData: Content {
+        let short: String
+        let long: String
+        let categories: [String]?
+        let csrfToken: String?
     }
     
     func createAcronymPostHandler(_ req: Request) throws -> EventLoopFuture<Response> {
         
         let data = try req.content.decode(CreateAcronymFormData.self)
         
-        let acronym = Acronym(
+        let user = try req.auth.require(User.self)
+        
+        let expectedToken = req.session.data["CSRF_TOKEN"]
+        req.session.data["CSRF_TOKEN"] = nil
+        guard let csrfToken = data.csrfToken,
+              expectedToken == csrfToken else {
+            throw Abort(.badRequest)
+        }
+        
+        let acronym = try Acronym(
             short: data.short,
             long: data.long,
-            userID: data.userID)
+            userID: user.requireID())
         
         return acronym.save(on: req.db)
             .flatMap {
@@ -111,30 +135,26 @@ struct AcronymsWebController: RouteCollection {
     }
     
     struct EditAcronymContext: BaseContext {
-        let useSelect2 = true
         let title = "Edit Acronym"
+        let userLoggedIn: Bool
+        let useSelect2 = true
         let acronym: Acronym
-        let users: [User]
         let editing = true
         let categories: [Category]
     }
     
     func editAcronymHandler(_ req: Request) -> EventLoopFuture<View> {
         
-        let acronymFuture = Acronym.find(req.parameters.get("acronymID"), on: req.db)
+        return Acronym.find(req.parameters.get("acronymID"), on: req.db)
             .unwrap(or: Abort(.notFound))
-        
-        let userQuery = User.query(on: req.db).all()
-        
-        return acronymFuture.and(userQuery)
-            .flatMap { acronym, users in
+            .flatMap { acronym in
                 
-                acronym.$categories.get(on: req.db).flatMap {
-                    categories in
+                acronym.$categories.get(on: req.db)
+                    .flatMap { categories in
                     
                     let context = EditAcronymContext(
+                        userLoggedIn: req.auth.has(User.self),
                         acronym: acronym,
-                        users: users,
                         categories: categories)
                     
                     return req.view.render("Acronyms/createAcronym", context)
@@ -146,6 +166,9 @@ struct AcronymsWebController: RouteCollection {
     
     func editAcronymPostHandler(_ req: Request) throws -> EventLoopFuture<Response> {
         
+        let user = try req.auth.require(User.self)
+        let userID = try user.requireID()
+        
         let updateData = try req.content.decode(CreateAcronymFormData.self)
         
         return Acronym
@@ -153,7 +176,7 @@ struct AcronymsWebController: RouteCollection {
             .unwrap(or: Abort(.notFound)).flatMap { acronym in
                 acronym.short = updateData.short
                 acronym.long = updateData.long
-                acronym.$user.id = updateData.userID
+                acronym.$user.id = userID
                 
                 guard let id = acronym.id else {
                     return req.eventLoop
@@ -211,11 +234,4 @@ struct AcronymsWebController: RouteCollection {
             }
     }
     
-}
-
-struct CreateAcronymFormData: Content {
-    let userID: UUID
-    let short: String
-    let long: String
-    let categories: [String]?
 }

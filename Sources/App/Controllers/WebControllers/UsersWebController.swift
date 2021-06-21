@@ -5,21 +5,24 @@ import Leaf
 struct UsersWebController: RouteCollection {
     
     func boot(routes: RoutesBuilder) throws {
-        let group = routes.grouped("users")
+        let authRoutes = routes.makeAuthRoutes(controllerName: "users")
         
-        group.get(use: indexHandler)
-        group.get(":userID", use: userHandler)
+        authRoutes.authSession.get(use: indexHandler)
+        authRoutes.authSession.get(":userID", use: userHandler)
         
     }
     
     struct IndexContext: BaseContext {
         let title: String
+        let userLoggedIn: Bool
         var users: [User]?
     }
     
     func indexHandler(_ req: Request) -> EventLoopFuture<View> {
         
-        var context = IndexContext(title: "Users")
+        var context = IndexContext(
+            title: "Users",
+            userLoggedIn: req.auth.has(User.self))
         
         return User.query(on: req.db).all()
             .flatMap { users in
@@ -31,6 +34,7 @@ struct UsersWebController: RouteCollection {
     
     struct UserContext: BaseContext {
         let title: String
+        let userLoggedIn: Bool
         let user: User
         let acronyms: [Acronym]
     }
@@ -44,6 +48,7 @@ struct UsersWebController: RouteCollection {
                     .flatMap { acronyms in
                         let context = UserContext(
                             title: user.name,
+                            userLoggedIn: req.auth.has(User.self),
                             user: user,
                             acronyms: acronyms)
                         

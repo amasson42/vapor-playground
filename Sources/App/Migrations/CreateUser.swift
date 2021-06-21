@@ -43,7 +43,7 @@ struct CreateAdminUser: Migration {
     
     func revert(on database: Database) -> EventLoopFuture<Void> {
         User.query(on: database)
-            .filter(\.$username == "admin")
+            .filter(\.$username == Self.defaultUsername)
             .delete()
     }
     
