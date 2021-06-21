@@ -72,3 +72,26 @@ services:
       POSTGRES_DB: vapor_database
     ports:
       - '5432:5432'
+  app-test:
+    profiles:
+      - testing
+    depends_on:
+      - db-test
+    build:
+      context: .
+      dockerfile: testing.Dockerfile
+    environment:
+      DATABASE_NAME: vapor-test
+      DATABASE_USERNAME: vapor_username
+      DATABASE_PASSWORD: vapor_password
+      DATABASE_PORT: 5432
+  db-test:
+    profiles:
+      - testing
+    image: postgres:12-alpine
+    environment:
+      POSTGRES_USER: vapor_username
+      POSTGRES_PASSWORD: vapor_password
+      POSTGRES_DB: vapor-test
+    ports:
+      - '5433:5432'

@@ -17,8 +17,7 @@ $(NAME): build
 
 # Clean the resource consuming generated services
 clean:
-	docker-compose down -v --remove-orphans
-	docker-compose -f testing.docker-compose.yml down -v --remove-orphans
+	docker-compose down -v
 
 # Clean and reset the whole package
 fclean: clean
@@ -37,12 +36,12 @@ kill:
 
 # Execute the unit tests with the services dependencies
 test: build
-	docker-compose -f testing.docker-compose.yml up -d db-test
+	docker-compose --profile testing up -d db-test
 	@swift test && echo TEST SUCCESS || echo TEST FAILED
-	docker-compose -f testing.docker-compose.yml down -v
+	docker-compose --profile testing down -v
 
 # Execute the unit tests in a docker image with services dependencies
 test_docker:
-	docker-compose -f testing.docker-compose.yml up --build --abort-on-container-exit
+	docker-compose --profile testing up --abort-on-container-exit app-test
 
 .PHONY: all build $(NAME) clean fclean run kill test test_docker

@@ -21,17 +21,21 @@ struct CreateUser: Migration {
 
 struct CreateAdminUser: Migration {
     
+    public static let defaultName = "Admin"
+    public static let defaultUsername = "admin"
+    public static let defaultPassword = "password"
+    
     func prepare(on database: Database) -> EventLoopFuture<Void> {
         let passwordHash: String
         do {
-            passwordHash = try Bcrypt.hash("password")
+            passwordHash = try Bcrypt.hash(Self.defaultPassword)
         } catch {
             return database.eventLoop.future(error: error)
         }
         
         let user = User(
-            name: "Admin",
-            username: "admin",
+            name: Self.defaultName,
+            username: Self.defaultUsername,
             password: passwordHash)
         
         return user.save(on: database)
@@ -41,7 +45,6 @@ struct CreateAdminUser: Migration {
         User.query(on: database)
             .filter(\.$username == "admin")
             .delete()
-        
     }
     
 }

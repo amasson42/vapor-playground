@@ -1,2 +1,5 @@
 .build/
 .swiftpm/
+db.sqlite
+tilApp
+Package.resolved

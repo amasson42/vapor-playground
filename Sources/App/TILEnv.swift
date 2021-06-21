@@ -23,10 +23,10 @@ struct TILEnv {
                 return ""
             }
         }
-        func getDefault(_ key: String, def: String) -> String {
+        func getDefaultString(_ key: String, def: String) -> String {
             return Environment.get(key) ?? def
         }
-        func getDefault(_ key: String, def: Int) -> Int {
+        func getDefaultInt(_ key: String, def: Int) -> Int {
             return Environment.get(key)?.toInt ?? def
         }
         func getOptionnal(_ key: String, message: String? = nil) -> String? {
@@ -37,11 +37,11 @@ struct TILEnv {
             return value
         }
         
-        self.DATABASE_HOST = getDefault("DATABASE_HOST", def: "localhost")
-        self.DATABASE_PORT = getDefault("DATABASE_PORT", def: PostgresConfiguration.ianaPortNumber)
-        self.DATABASE_USERNAME = getDefault("DATABASE_USERNAME", def: "vapor_username")
-        self.DATABASE_PASSWORD = getDefault("DATABASE_PASSWORD", def: "vapor_password")
-        self.DATABASE_NAME = getDefault("DATABASE_NAME", def: "vapor_database")
+        self.DATABASE_HOST = getDefaultString("DATABASE_HOST", def: "localhost")
+        self.DATABASE_PORT = getDefaultInt("DATABASE_PORT", def: PostgresConfiguration.ianaPortNumber)
+        self.DATABASE_USERNAME = getDefaultString("DATABASE_USERNAME", def: "vapor_username")
+        self.DATABASE_PASSWORD = getDefaultString("DATABASE_PASSWORD", def: "vapor_password")
+        self.DATABASE_NAME = getDefaultString("DATABASE_NAME", def: "vapor_database")
         
         if !missingRequiredKeys.isEmpty {
             throw MissingKeysError(keys: missingRequiredKeys)

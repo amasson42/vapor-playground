@@ -12,6 +12,4 @@ RUN swift package resolve
 
 COPY . ./
 
-RUN swift build --enable-test-discovery
-
 CMD ["swift", "test", "--enable-test-discovery"]
