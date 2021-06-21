@@ -27,16 +27,16 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav mr-auto">
-                <li class="nav-item #if(title == " Home Page"): active #endif">
+                <li class="nav-item #if(title == "Home Page"): active #endif">
                     <a href="/" class="nav-link">Home</a>
                 </li>
-                <li class="nav-item #if(title == " Acronyms"): active #endif">
+                <li class="nav-item #if(title == "Acronyms"): active #endif">
                     <a href="/acronyms" class="nav-link">Acronyms</a>
                 </li>
-                <li class="nav-item #if(title == " Users"): active #endif">
+                <li class="nav-item #if(title == "Users"): active #endif">
                     <a href="/users" class="nav-link">Users</a>
                 </li>
-                <li class="nav-item #if(title == " Categories"): active #endif">
+                <li class="nav-item #if(title == "Categories"): active #endif">
                     <a href="/categories" class="nav-link">Categories</a>
                 </li>
             </ul>
@@ -44,6 +44,11 @@
             <form class="form-inline" action="/logout" method="POST">
                 <input class="nav-link btn btn-secondary mr-sm-2" type="submit" value="Log out" />
             </form>
+            #else:
+            <li class="nav-item #if(title == "Register"): active #endif">
+                <a href="/register" class="nav-link">Register</a>
+            </li>
+            <a href="/login" class="nav-link btn btn-secondary mr-sm-2">Log In</a>
             #endif
         </div>
     </nav>

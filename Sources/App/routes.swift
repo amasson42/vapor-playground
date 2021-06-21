@@ -28,10 +28,10 @@ func routes(_ app: Application) throws {
     
     // MARK: Web
     
-    try app.register(collection: WebsiteController())
 //    try app.register(collection: HomeWebController())
 //    try app.register(collection: AcronymsWebController())
 //    try app.register(collection: UsersWebController())
 //    try app.register(collection: CategoriesWebController())
+    try app.register(collection: WebsiteController())
     
 }
