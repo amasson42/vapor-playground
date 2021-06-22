@@ -14,7 +14,9 @@ let package = Package(
 //        .package(url: "https://github.com/vapor/fluent-sqlite-driver.git", from: "4.0.0"),
         .package(url: "https://github.com/vapor/fluent-mysql-driver.git", from: "4.0.0"),
         .package(url: "https://github.com/vapor/fluent-mongo-driver.git", from: "1.0.0"),
-        .package(url: "https://github.com/vapor/leaf.git", from: "4.0.0")
+        .package(url: "https://github.com/vapor/leaf.git", from: "4.0.0"),
+        .package(url: "https://github.com/vapor-community/Imperial.git", from: "1.0.0"),
+        .package(url: "https://github.com/vapor/jwt.git", from: "4.0.0"),
     ],
     targets: [
         .target(
@@ -26,7 +28,10 @@ let package = Package(
 //                .product(name: "FluentSQLiteDriver", package: "fluent-sqlite-driver"),
                 .product(name: "FluentMySQLDriver", package: "fluent-mysql-driver"),
                 .product(name: "FluentMongoDriver", package: "fluent-mongo-driver"),
-                .product(name: "Leaf", package: "leaf")
+                .product(name: "Leaf", package: "leaf"),
+                .product(name: "ImperialGoogle", package: "Imperial"),
+                .product(name: "ImperialGitHub", package: "Imperial"),
+                .product(name: "JWT", package: "jwt"),
             ],
             swiftSettings: [
                 // Enable better optimizations when building in Release configuration. Despite the use of

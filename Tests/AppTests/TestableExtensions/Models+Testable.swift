@@ -10,7 +10,7 @@ extension User {
         
         let username = username ?? UUID().uuidString
         
-        let password = try Bcrypt.hash("password")
+        let password = try Bcrypt.hash(password)
         
         let user = User(name: name,
                         username: username,

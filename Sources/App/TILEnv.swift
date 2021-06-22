@@ -3,11 +3,26 @@ import FluentPostgresDriver
 
 struct TILEnv {
     
+    // MARK: Database connection
     let DATABASE_HOST: String
     let DATABASE_PORT: Int
     let DATABASE_USERNAME: String
     let DATABASE_PASSWORD: String
     let DATABASE_NAME: String
+    
+    // MARK: Sign in with Google
+    let GOOGLE_CALLBACK_URL: String? // http://localhost:8080/oauth/google
+    let GOOGLE_CLIENT_ID: String?
+    let GOOGLE_CLIENT_SECRET: String?
+
+    // MARK: Sign in with GitHub
+    let GITHUB_CALLBACK_URL: String? // http://localhost:8080/oauth/github
+    let GITHUB_CLIENT_ID: String?
+    let GITHUB_CLIENT_SECRET: String?
+
+    
+    
+    // MARK: Initialization
     
     struct MissingKeysError: Error {
         let keys: [String]
@@ -42,6 +57,14 @@ struct TILEnv {
         self.DATABASE_USERNAME = getDefaultString("DATABASE_USERNAME", def: "vapor_username")
         self.DATABASE_PASSWORD = getDefaultString("DATABASE_PASSWORD", def: "vapor_password")
         self.DATABASE_NAME = getDefaultString("DATABASE_NAME", def: "vapor_database")
+        
+        self.GOOGLE_CALLBACK_URL = getOptionnal("GOOGLE_CALLBACK_URL", message: "No Google for you !")
+        self.GOOGLE_CLIENT_ID = getOptionnal("GOOGLE_CLIENT_ID")
+        self.GOOGLE_CLIENT_SECRET = getOptionnal("GOOGLE_CLIENT_SECRET")
+        
+        self.GITHUB_CALLBACK_URL = getOptionnal("GITHUB_CALLBACK_URL", message: "No Github for you !")
+        self.GITHUB_CLIENT_ID = getOptionnal("GITHUB_CLIENT_ID")
+        self.GITHUB_CLIENT_SECRET = getOptionnal("GITHUB_CLIENT_SECRET")
         
         if !missingRequiredKeys.isEmpty {
             throw MissingKeysError(keys: missingRequiredKeys)

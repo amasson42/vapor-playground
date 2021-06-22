@@ -1,4 +1,5 @@
 import Vapor
+import Fluent
 import Leaf
 
 struct AuthRoutes {
@@ -79,6 +80,7 @@ struct HomeWebController: RouteCollection {
             validations.add("name", as: String.self, is: .ascii)
             validations.add("username", as: String.self, is: .alphanumeric && .count(3...))
             validations.add("password", as: String.self, is: .count(8...))
+            validations.add("zipCode", as: String.self, is: .zipCode, required: false)
         }
         
     }
@@ -151,4 +153,37 @@ protocol BaseContext: Encodable {
 
 extension BaseContext {
     var useSelect2: Bool { false }
+}
+
+extension ValidatorResults {
+    struct ZipCode: ValidatorResult {
+        let isValidZipCode: Bool
+        
+        var isFailure: Bool {
+            !isValidZipCode
+        }
+        
+        var successDescription: String? { "is a valid zip code" }
+        var failureDescription: String? { "is not a valid zip code" }
+    }
+}
+
+extension Validator where T == String {
+    private static var zipCodeRegex: String {
+        "^\\d{5}(?:[-\\s]\\d{4})?$"
+    }
+    
+    public static var zipCode: Validator<T> {
+        Validator { input -> ValidatorResult in
+            guard let range = input.range(
+                    of: zipCodeRegex,
+                    options: [.regularExpression]),
+                range.lowerBound == input.startIndex
+                    && range.upperBound == input.endIndex
+            else {
+                return ValidatorResults.ZipCode(isValidZipCode: false)
+            }
+            return ValidatorResults.ZipCode(isValidZipCode: true)
+        }
+    }
 }
