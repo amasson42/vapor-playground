@@ -2,39 +2,19 @@ import Vapor
 import Fluent
 import Leaf
 
-struct AuthRoutes {
-    let group: RoutesBuilder
-    let authSession: RoutesBuilder
-    let credentialsAuth: RoutesBuilder
-    let protected: RoutesBuilder
-}
-
-extension RoutesBuilder {
-    
-    func makeAuthRoutes(controllerName: String) -> AuthRoutes {
-        let controllerGroup = self.grouped(.init(stringLiteral: controllerName))
-        let authSessionRoutes = controllerGroup.grouped(User.sessionAuthenticator())
-        return AuthRoutes(
-            group: controllerGroup,
-            authSession: authSessionRoutes,
-            credentialsAuth: authSessionRoutes.grouped(User.credentialsAuthenticator()),
-            protected: authSessionRoutes.grouped(User.redirectMiddleware(path: "/login")))
-    }
-    
-}
-
 struct HomeWebController: RouteCollection {
     
     func boot(routes: RoutesBuilder) throws {
-        let authRoutes = routes.makeAuthRoutes(controllerName: "")
         
-        authRoutes.authSession.get(use: indexHandler)
-        authRoutes.authSession.get("register", use: registerHandler)
-        authRoutes.authSession.post("register", use: registerPostHandler)
-        authRoutes.authSession.get("login", use: loginHandler)
-        authRoutes.credentialsAuth.post("login", use: loginPostHandler)
-        authRoutes.authSession.post("logout", use: logoutHandler)
-
+        let credentialsRoutes = routes.grouped(User.credentialsAuthenticator())
+        
+        routes.get(use: indexHandler)
+        routes.get("register", use: registerHandler)
+        routes.post("register", use: registerPostHandler)
+        routes.get("login", use: loginHandler)
+        credentialsRoutes.post("login", use: loginPostHandler)
+        routes.post("logout", use: logoutHandler)
+        
     }
     
     struct IndexContext: BaseContext {

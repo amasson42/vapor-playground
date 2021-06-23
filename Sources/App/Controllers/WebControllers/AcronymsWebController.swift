@@ -5,15 +5,17 @@ import Leaf
 struct AcronymsWebController: RouteCollection {
     
     func boot(routes: RoutesBuilder) throws {
-        let authRoutes = routes.makeAuthRoutes(controllerName: "acronyms")
         
-        authRoutes.group.get(use: indexHandler)
-        authRoutes.authSession.get(":acronymID", use: acronymHandler)
-        authRoutes.protected.get("create", use: createAcronymHandler)
-        authRoutes.protected.post("create", use: createAcronymPostHandler)
-        authRoutes.protected.get(":acronymID", "edit", use: editAcronymHandler)
-        authRoutes.protected.post(":acronymID", "edit", use: editAcronymPostHandler)
-        authRoutes.protected.post(":acronymID", "delete", use: deleteAcronymHandler)
+        let group = routes.grouped("acronyms")
+        let protected = group.grouped(User.redirectMiddleware(path: "/login"))
+        
+        group.get(use: indexHandler)
+        group.get(":acronymID", use: acronymHandler)
+        protected.get("create", use: createAcronymHandler)
+        protected.post("create", use: createAcronymPostHandler)
+        protected.get(":acronymID", "edit", use: editAcronymHandler)
+        protected.post(":acronymID", "edit", use: editAcronymPostHandler)
+        protected.post(":acronymID", "delete", use: deleteAcronymHandler)
         
     }
     

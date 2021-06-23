@@ -1,7 +1,7 @@
 import Vapor
 import Fluent
 import FluentPostgresDriver
-//import FluentSQLiteDriver
+import FluentSQLiteDriver
 import FluentMySQLDriver
 import FluentMongoDriver
 import Leaf
@@ -60,7 +60,16 @@ public func configure(_ app: Application) throws {
     app.migrations.add(CreateCategory())
     app.migrations.add(CreateAcronymCategoryPivot())
     
-    try app.autoMigrate().wait()
+    var connectedToDb = false
+    while !connectedToDb {
+        do {
+            try app.autoMigrate().wait()
+            connectedToDb = true
+        } catch {
+            app.logger.notice("Error connecting to database: \(error)... Trying again in 3 seconds")
+            sleep(3)
+        }
+    }
     
     // MARK: View rendering
     

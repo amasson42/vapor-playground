@@ -5,10 +5,11 @@ import Leaf
 struct UsersWebController: RouteCollection {
     
     func boot(routes: RoutesBuilder) throws {
-        let authRoutes = routes.makeAuthRoutes(controllerName: "users")
         
-        authRoutes.authSession.get(use: indexHandler)
-        authRoutes.authSession.get(":userID", use: userHandler)
+        let group = routes.grouped("users")
+        
+        group.get(use: indexHandler)
+        group.get(":userID", use: userHandler)
         
     }
     

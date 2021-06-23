@@ -28,11 +28,14 @@ func routes(_ app: Application) throws {
     
     // MARK: Web
     
-//    try app.register(collection: HomeWebController())
-//    try app.register(collection: AcronymsWebController())
-//    try app.register(collection: UsersWebController())
-//    try app.register(collection: CategoriesWebController())
-    try app.register(collection: WebsiteController())
-    try app.register(collection: ImperialController())
+    let web = app.grouped(User.sessionAuthenticator())
     
+    try web.register(collection: HomeWebController())
+    try web.register(collection: AcronymsWebController())
+    try web.register(collection: UsersWebController())
+    try web.register(collection: CategoriesWebController())
+    
+    // As app so the login is not required
+    try app.register(collection: ImperialController())
+
 }

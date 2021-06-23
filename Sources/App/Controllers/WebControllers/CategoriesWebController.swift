@@ -5,10 +5,11 @@ import Leaf
 struct CategoriesWebController: RouteCollection {
     
     func boot(routes: RoutesBuilder) throws {
-        let authRoutes = routes.makeAuthRoutes(controllerName: "categories")
         
-        authRoutes.authSession.get(use: indexHandler)
-        authRoutes.authSession.get(":categoryID", use: categoryHandler)
+        let group = routes.grouped("categories")
+        
+        group.get(use: indexHandler)
+        group.get(":categoryID", use: categoryHandler)
         
     }
     
