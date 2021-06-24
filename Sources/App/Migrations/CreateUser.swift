@@ -9,7 +9,9 @@ struct CreateUser: Migration {
             .field("name", .string, .required)
             .field("username", .string, .required)
             .field("password", .string, .required)
+            .field("email", .string, .required)
             .unique(on: "username")
+            .unique(on: "email")
             .create()
     }
     
@@ -24,6 +26,7 @@ struct CreateAdminUser: Migration {
     public static let defaultName = "Admin"
     public static let defaultUsername = "admin"
     public static let defaultPassword = "password"
+    public static let defaultEmail = "giantwow3896@gmail.com"
     
     func prepare(on database: Database) -> EventLoopFuture<Void> {
         let passwordHash: String
@@ -36,7 +39,8 @@ struct CreateAdminUser: Migration {
         let user = User(
             name: Self.defaultName,
             username: Self.defaultUsername,
-            password: passwordHash)
+            password: passwordHash,
+            email: Self.defaultEmail)
         
         return user.save(on: database)
     }

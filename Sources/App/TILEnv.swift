@@ -3,6 +3,8 @@ import FluentPostgresDriver
 
 struct TILEnv {
     
+    let LISTEN_FRONT_URL: String
+    
     // MARK: Database connection
     let DATABASE_HOST: String
     let DATABASE_PORT: Int
@@ -20,7 +22,9 @@ struct TILEnv {
     let GITHUB_CLIENT_ID: String?
     let GITHUB_CLIENT_SECRET: String?
 
-    
+    // MARK: SendGrid mailer
+    let SENDGRID_API_KEY: String?
+    let SENDGRID_SENDER_EMAIL: String?
     
     // MARK: Initialization
     
@@ -52,6 +56,8 @@ struct TILEnv {
             return value
         }
         
+        self.LISTEN_FRONT_URL = getDefaultString("LISTEN_FRONT_URL", def: "http://localhost:8080")
+        
         self.DATABASE_HOST = getDefaultString("DATABASE_HOST", def: "localhost")
         self.DATABASE_PORT = getDefaultInt("DATABASE_PORT", def: PostgresConfiguration.ianaPortNumber)
         self.DATABASE_USERNAME = getDefaultString("DATABASE_USERNAME", def: "vapor_username")
@@ -65,6 +71,9 @@ struct TILEnv {
         self.GITHUB_CALLBACK_URL = getOptionnal("GITHUB_CALLBACK_URL", message: "No Github for you !")
         self.GITHUB_CLIENT_ID = getOptionnal("GITHUB_CLIENT_ID")
         self.GITHUB_CLIENT_SECRET = getOptionnal("GITHUB_CLIENT_SECRET")
+        
+        self.SENDGRID_API_KEY = getOptionnal("SENDGRID_API_KEY", message: "No Mailer for you !")
+        self.SENDGRID_SENDER_EMAIL = getOptionnal("SENDGRID_SENDER_EMAIL")
         
         if !missingRequiredKeys.isEmpty {
             throw MissingKeysError(keys: missingRequiredKeys)

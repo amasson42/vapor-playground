@@ -8,6 +8,7 @@ final class UserTests: XCTestCase {
     let usersName = "Alice"
     let usersUsername = "alicea"
     let usersPassword = "securityprofesional"
+    let usersEmail = "alicea@whatever.yolo"
     
     override func setUpWithError() throws {
         app = try Application.testable()
@@ -43,7 +44,8 @@ final class UserTests: XCTestCase {
         let user = User(
             name: usersName,
             username: usersUsername,
-            password: usersPassword)
+            password: usersPassword,
+            email: usersEmail)
         
         try app.test(
             .POST, usersURI,

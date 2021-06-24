@@ -5,6 +5,7 @@ import FluentSQLiteDriver
 import FluentMySQLDriver
 import FluentMongoDriver
 import Leaf
+import SendGrid
 
 // configures your application
 public func configure(_ app: Application) throws {
@@ -56,6 +57,7 @@ public func configure(_ app: Application) throws {
     app.migrations.add(CreateUser())
     app.migrations.add(CreateAdminUser())
     app.migrations.add(CreateToken())
+    app.migrations.add(CreateResetPasswordToken())
     app.migrations.add(CreateAcronym())
     app.migrations.add(CreateCategory())
     app.migrations.add(CreateAcronymCategoryPivot())
@@ -66,8 +68,12 @@ public func configure(_ app: Application) throws {
             try app.autoMigrate().wait()
             connectedToDb = true
         } catch {
-            app.logger.notice("Error connecting to database: \(error)... Trying again in 3 seconds")
-            sleep(3)
+            if app.environment == .testing {
+                throw error
+            } else {
+                app.logger.notice("Error connecting to database: \(error)... Trying again in 3 seconds")
+                sleep(3)
+            }
         }
     }
     
@@ -77,4 +83,8 @@ public func configure(_ app: Application) throws {
     
     // register routes
     try routes(app)
+    
+    if Environment.tilEnv.SENDGRID_API_KEY != nil {
+        app.sendgrid.initialize()
+    }
 }

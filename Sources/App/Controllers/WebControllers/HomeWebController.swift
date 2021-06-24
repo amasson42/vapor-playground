@@ -1,6 +1,7 @@
 import Vapor
 import Fluent
 import Leaf
+import SendGrid
 
 struct HomeWebController: RouteCollection {
     
@@ -14,6 +15,10 @@ struct HomeWebController: RouteCollection {
         routes.get("login", use: loginHandler)
         credentialsRoutes.post("login", use: loginPostHandler)
         routes.post("logout", use: logoutHandler)
+        routes.get("forgottenPassword", use: forgottenPasswordHandler)
+        routes.post("forgottenPassword", use: forgottenPasswordPostHandler)
+        routes.get("resetPassword", use: resetPasswordHandler)
+        routes.post("resetPassword", use: resetPasswordPostHandler)
         
     }
     
@@ -55,12 +60,14 @@ struct HomeWebController: RouteCollection {
         let username: String
         let password: String
         let confirmPassword: String
+        let emailAddress: String
         
         static func validations(_ validations: inout Validations) {
             validations.add("name", as: String.self, is: .ascii)
             validations.add("username", as: String.self, is: .alphanumeric && .count(3...))
             validations.add("password", as: String.self, is: .count(8...))
             validations.add("zipCode", as: String.self, is: .zipCode, required: false)
+            validations.add("emailAddress", as: String.self, is: .email)
         }
         
     }
@@ -85,7 +92,8 @@ struct HomeWebController: RouteCollection {
         let user = User(
             name: data.name,
             username: data.username,
-            password: password)
+            password: password,
+            email: data.emailAddress)
         
         return user.save(on: req.db).map {
             req.auth.login(user)
@@ -123,6 +131,144 @@ struct HomeWebController: RouteCollection {
         return req.redirect(to: "/")
     }
     
+    struct ForgetPasswordContext: BaseContext {
+        let title = "Reset Your Password"
+        let userLoggedIn = false
+    }
+    
+    func forgottenPasswordHandler(_ req: Request) -> EventLoopFuture<View> {
+        req.view.render("forgottenPassword", ForgetPasswordContext())
+    }
+    
+    struct ForgetPasswordConfirmedContext: BaseContext {
+        let title = "Password Reset Email Sent"
+        let userLoggedIn = false
+    }
+    
+    func forgottenPasswordPostHandler(_ req: Request) throws -> EventLoopFuture<View> {
+        let email = try req.content.get(String.self, at: "email")
+        let context = ForgetPasswordConfirmedContext()
+        
+        return User.query(on: req.db)
+            .filter(\.$email == email)
+            .first()
+            .flatMap { user in
+                
+                let resetTokenString = Data([UInt8].random(count: 32)).base32EncodedString()
+                let resetTokenLink = "\(Environment.tilEnv.LISTEN_FRONT_URL)/resetPassword?token=\(resetTokenString)"
+                
+                guard let user = user else {
+                    // If the user does not exist, act like he does to not reveal anything :x
+                    return req.view.render("forgottenPasswordConfirmed", context)
+                }
+                
+                let resetToken: ResetPasswordToken
+                do {
+                    resetToken = try ResetPasswordToken(token: resetTokenString, userID: user.requireID())
+                } catch {
+                    return req.eventLoop.future(error: error)
+                }
+                
+                return resetToken.save(on: req.db).flatMap {
+                    
+                    guard let senderEmail = Environment.tilEnv.SENDGRID_SENDER_EMAIL,
+                          Environment.tilEnv.SENDGRID_API_KEY != nil else {
+                        return req.eventLoop.future(error: "Mailing is not set. the link would have been \(resetTokenLink). I know you're not a bad person and won't user it in a bad way !")
+                    }
+                    
+                    let emailContent = """
+                        <p>You've requested to reset your password.
+                        <a href="\(resetTokenLink)">
+                            Click here
+                        </a>
+                        </p>
+                        """
+                    let emailAddress = EmailAddress(email: user.email, name: user.name)
+                    let fromEmail = EmailAddress(email: senderEmail,
+                                                 name: "Vapor TIL")
+                    let emailConfig = Personalization(
+                        to: [emailAddress],
+                        subject: "Reset Your Password")
+                    
+                    let email = SendGridEmail(
+                        personalizations: [emailConfig],
+                        from: fromEmail,
+                        content: [
+                            [
+                                "type": "text/html",
+                                "value": emailContent
+                            ]
+                        ]
+                    )
+                    
+                    let emailSend: EventLoopFuture<Void>
+                    
+                    do {
+                        emailSend = try req.application
+                            .sendgrid.client.send(email: email, on: req.eventLoop)
+                    } catch {
+                        return req.eventLoop.future(error: error)
+                    }
+                    return emailSend.flatMap {
+                        return req.view.render("forgottenPasswordConfirmed", context)
+                    }
+                }
+            }
+    }
+    
+    struct ResetPasswordContext: BaseContext {
+        let title = "Reset Password"
+        let userLoggedIn = false
+        let error: Bool
+    }
+    
+    func resetPasswordHandler(_ req: Request) -> EventLoopFuture<View> {
+        guard let token = try? req.query.get(String.self, at: "token") else {
+            return req.view.render("resetPassword",
+                                   ResetPasswordContext(error: true))
+        }
+        
+        return ResetPasswordToken.query(on: req.db)
+            .filter(\.$token == token)
+            .first()
+            .unwrap(or: Abort.redirect(to: "/"))
+            .flatMap { token in
+                token.$user.get(on: req.db).flatMap { user in
+                    do {
+                        try req.session.set("ResetPasswordUser", to: user)
+                    } catch {
+                        return req.eventLoop.future(error: error)
+                    }
+                    
+                    return token.delete(on: req.db)
+                }
+            }.flatMap {
+                req.view.render("resetPassword", ResetPasswordContext(error: false))
+            }
+    }
+    
+    struct ResetPasswordData: Content {
+        let password: String
+        let confirmPassword: String
+    }
+    
+    func resetPasswordPostHandler(_ req: Request) throws -> EventLoopFuture<Response> {
+        let data = try req.content.decode(ResetPasswordData.self)
+        guard data.password == data.confirmPassword else {
+            return req.view.render("resetPassword", ResetPasswordContext(error: true))
+                .encodeResponse(for: req)
+        }
+        let resetPasswordUser = try req.session.get("ResetPasswordUser", as: User.self)
+        req.session.data["ResetPasswordUser"] = nil
+        
+        let newPassword = try Bcrypt.hash(data.password)
+        
+        return try User.query(on: req.db)
+            .filter(\.$id == resetPasswordUser.requireID())
+            .set(\.$password, to: newPassword)
+            .update()
+            .transform(to: req.redirect(to: "/login"))
+    }
 }
 
 protocol BaseContext: Encodable {
@@ -158,7 +304,7 @@ extension Validator where T == String {
             guard let range = input.range(
                     of: zipCodeRegex,
                     options: [.regularExpression]),
-                range.lowerBound == input.startIndex
+                  range.lowerBound == input.startIndex
                     && range.upperBound == input.endIndex
             else {
                 return ValidatorResults.ZipCode(isValidZipCode: false)
