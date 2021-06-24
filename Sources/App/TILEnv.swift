@@ -90,3 +90,9 @@ extension Environment {
         }
     }()
 }
+
+extension TILEnv {
+    static let dynamicDirectories = [
+        "profile"
+    ]
+}

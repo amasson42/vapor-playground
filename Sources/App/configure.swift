@@ -13,7 +13,11 @@ public func configure(_ app: Application) throws {
     app.middleware.use(FileMiddleware(publicDirectory: app.directory.publicDirectory))
     app.middleware.use(app.sessions.middleware)
     
-    app.logger.debug("Using Middleware directory: \(app.directory.publicDirectory)")
+    for dir in TILEnv.dynamicDirectories {
+        try? FileManager.default.createDirectory(
+            atPath: app.directory.publicDirectory + "dynamic/" + dir,
+            withIntermediateDirectories: true)
+    }
     
     // MARK: Use database
     

@@ -19,6 +19,9 @@ final class User: Model, Content {
     @Field(key: "email")
     var email: String
     
+    @OptionalField(key: "profilePicture")
+    var profilePicture: String?
+    
     @Children(for: \.$user)
     var acronyms: [Acronym]
     
@@ -26,11 +29,12 @@ final class User: Model, Content {
     
     init(id: UUID? = nil, name: String,
          username: String, password: String,
-         email: String) {
+         email: String, profilePicture: String? = nil) {
         self.name = name
         self.username = username
         self.password = password
         self.email = email
+        self.profilePicture = profilePicture
     }
     
     final class Public: Content {

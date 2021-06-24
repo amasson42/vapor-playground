@@ -18,6 +18,7 @@ $(NAME): build
 # Clean the resource consuming generated services
 clean:
 	docker-compose down -v
+	rm -rf Public/dynamic
 
 # Clean and reset the whole package
 fclean: clean
