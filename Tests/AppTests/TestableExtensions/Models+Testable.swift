@@ -45,3 +45,12 @@ extension App.Category {
         return category
     }
 }
+
+extension App.Pokemon {
+    static func create(name: String = "Pikachu",
+                       on database: Database) throws -> App.Pokemon {
+        let pokemon = Pokemon(name: name)
+        try pokemon.save(on: database).wait()
+        return pokemon
+    }
+}

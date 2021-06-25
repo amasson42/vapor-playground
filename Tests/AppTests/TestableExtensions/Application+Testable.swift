@@ -1,5 +1,6 @@
 @testable import XCTVapor
 @testable import App
+import SQLKit
 
 extension Application {
     static func testable() throws -> Application {
@@ -10,6 +11,7 @@ extension Application {
             
             try app.autoRevert().wait()
             try app.autoMigrate().wait()
+            
         } catch {
             app.shutdown()
             throw error
