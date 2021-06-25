@@ -4,7 +4,7 @@ import XCTVapor
 final class AcronymTests: XCTestCase {
     
     var app: Application!
-    let acronymsURI = "/api/acronyms/"
+    let acronymsURI = "/api/v1/acronyms/"
     let acronymShort = "OMG"
     let acronymLong = "Oh My God"
     

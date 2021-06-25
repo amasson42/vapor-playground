@@ -24,7 +24,7 @@ extension XCTApplicationTester {
     public func login(user: User, password: String = "password") throws -> Token {
         var request = XCTHTTPRequest(
             method: .POST,
-            url: .init(path: "/api/users/login"),
+            url: .init(path: "/api/v1/users/login"),
             headers: [:],
             body: ByteBufferAllocator().buffer(capacity: 0))
         

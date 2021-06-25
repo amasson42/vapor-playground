@@ -4,7 +4,7 @@ import XCTVapor
 final class CategoryTests: XCTestCase {
     
     var app: Application!
-    let categoriesURI = "/api/categories/"
+    let categoriesURI = "/api/v1/categories/"
     let categoryName = "Teenager"
     
     override func setUpWithError() throws {
@@ -74,10 +74,10 @@ final class CategoryTests: XCTestCase {
         let category = try App.Category.create(name: categoryName, on: app.db)
         
         try app.test(
-            .POST, "/api/acronyms/\(acronym0.id!)/categories/\(category.id!)",
+            .POST, "/api/v1/acronyms/\(acronym0.id!)/categories/\(category.id!)",
             loggedInRequest: true)
         try app.test(
-            .POST, "/api/acronyms/\(acronym1.id!)/categories/\(category.id!)",
+            .POST, "/api/v1/acronyms/\(acronym1.id!)/categories/\(category.id!)",
             loggedInRequest: true)
         
         try app.test(.GET, "\(categoriesURI)\(category.id!)/acronyms", afterResponse: { response in

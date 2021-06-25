@@ -20,7 +20,7 @@ func routes(_ app: Application) throws {
     }
     
     // MARK: Api
-    let api = app.grouped("api")
+    let api = app.grouped("api", "v1")
     
     try api.register(collection: AcronymsController())
     try api.register(collection: UsersController())

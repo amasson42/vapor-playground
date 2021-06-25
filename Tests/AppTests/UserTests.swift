@@ -4,7 +4,7 @@ import XCTVapor
 final class UserTests: XCTestCase {
     
     var app: Application!
-    let usersURI = "/api/users/"
+    let usersURI = "/api/v1/users/"
     let usersName = "Alice"
     let usersUsername = "alicea"
     let usersPassword = "securityprofesional"
