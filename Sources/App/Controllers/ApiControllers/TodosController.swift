@@ -8,6 +8,7 @@ struct TodosController: RouteCollection {
         
         group.get(use: handleGet)
         group.post(use: handlePost)
+        group.get(":id", use: handleGetOne)
         group.delete(":id", use: handleDelete)
     }
     
@@ -21,11 +22,16 @@ struct TodosController: RouteCollection {
             .transform(to: todo)
     }
     
+    func handleGetOne(_ req: Request) throws -> EventLoopFuture<Todo> {
+        Todo.find(req.parameters.get("id"), on: req.db)
+            .unwrap(or: Abort(.notFound))
+    }
+    
     func handleDelete(_ req: Request) throws -> EventLoopFuture<HTTPStatus> {
         return Todo.find(req.parameters.get("id"), on: req.db)
             .unwrap(or: Abort(.notFound))
             .flatMap { $0.delete(on: req.db) }
-            .transform(to: .ok)
+            .transform(to: .noContent)
     }
     
 }

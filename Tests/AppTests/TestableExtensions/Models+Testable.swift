@@ -54,3 +54,12 @@ extension App.Pokemon {
         return pokemon
     }
 }
+
+extension App.Todo {
+    static func create(title: String = "Kill crew members",
+                       on database: Database) throws -> App.Todo {
+        let todo = Todo(title: title)
+        try todo.save(on: database).wait()
+        return todo
+    }
+}
