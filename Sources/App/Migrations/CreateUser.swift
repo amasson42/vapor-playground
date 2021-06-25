@@ -1,27 +1,41 @@
 import Fluent
 import Vapor
 
-struct CreateUser: Migration {
+struct CreateUser_v100: Migration {
     
     func prepare(on database: Database) -> EventLoopFuture<Void> {
-        database.schema(User.schema)
+        database.schema(User.v100.schema)
             .id()
-            .field("name", .string, .required)
-            .field("username", .string, .required)
-            .field("password", .string, .required)
-            .field("email", .string, .required)
-            .field("profilePicture", .string)
-            .unique(on: "username")
-            .unique(on: "email")
+            .field(User.v100.name, .string, .required)
+            .field(User.v100.username, .string, .required)
+            .field(User.v100.password, .string, .required)
+            .field(User.v100.email, .string, .required)
+            .field(User.v100.profilePicture, .string)
+            .unique(on: User.v100.username)
+            .unique(on: User.v100.email)
             .create()
     }
     
     func revert(on database: Database) -> EventLoopFuture<Void> {
-        database.schema(User.schema).delete()
+        database.schema(User.v100.schema).delete()
     }
     
 }
 
+extension User {
+    enum v100 {
+        static let schema = "users"
+        
+        static let id: FieldKey = "id"
+        static let name: FieldKey = "name"
+        static let username: FieldKey = "username"
+        static let password: FieldKey = "password"
+        static let email: FieldKey = "email"
+        static let profilePicture: FieldKey = "profilePicture"
+    }
+}
+
+// CreateAdminUser does not need versioning as it's not meant for production
 struct CreateAdminUser: Migration {
     
     public static let defaultName = "Admin"
@@ -30,20 +44,18 @@ struct CreateAdminUser: Migration {
     public static let defaultEmail = "giantwow3896@gmail.com"
     
     func prepare(on database: Database) -> EventLoopFuture<Void> {
-        let passwordHash: String
+        
         do {
-            passwordHash = try Bcrypt.hash(Self.defaultPassword)
+            return try User(
+                name: Self.defaultName,
+                username: Self.defaultUsername,
+                password: Bcrypt.hash(Self.defaultPassword),
+                email: Self.defaultEmail)
+                .save(on: database)
         } catch {
             return database.eventLoop.future(error: error)
         }
         
-        let user = User(
-            name: Self.defaultName,
-            username: Self.defaultUsername,
-            password: passwordHash,
-            email: Self.defaultEmail)
-        
-        return user.save(on: database)
     }
     
     func revert(on database: Database) -> EventLoopFuture<Void> {

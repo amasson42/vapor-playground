@@ -56,15 +56,18 @@ public func configure(_ app: Application) throws {
     
     // MARK: Migration scripts
     
-    /// The order of this migrations call matter.
-    /// It will create database tables and if there is relationships, then they have to exist in correct order
-    app.migrations.add(CreateUser())
-    app.migrations.add(CreateAdminUser())
-    app.migrations.add(CreateToken())
-    app.migrations.add(CreateResetPasswordToken())
-    app.migrations.add(CreateAcronym())
-    app.migrations.add(CreateCategory())
-    app.migrations.add(CreateAcronymCategoryPivot())
+    app.migrations.add(CreateUser_v100())
+    app.migrations.add(CreateToken_v100())
+    app.migrations.add(CreateResetPasswordToken_v100())
+    app.migrations.add(CreateAcronym_v100())
+    app.migrations.add(CreateCategory_v100())
+    app.migrations.add(CreateAcronymCategoryPivot_v100())
+    
+    
+    
+    if app.environment == .development || app.environment == .testing {
+        app.migrations.add(CreateAdminUser())
+    }
     
     var connectedToDb = false
     while !connectedToDb {

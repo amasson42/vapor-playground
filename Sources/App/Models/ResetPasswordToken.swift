@@ -2,15 +2,15 @@ import Vapor
 import Fluent
 
 final class ResetPasswordToken: Model, Content {
-    static let schema = "reset-password-tokens"
+    static let schema = v100.schema
     
     @ID
     var id: UUID?
     
-    @Field(key: "token")
+    @Field(key: v100.token)
     var token: String
     
-    @Parent(key: "userID")
+    @Parent(key: v100.userID)
     var user: User
     
     init() {}
