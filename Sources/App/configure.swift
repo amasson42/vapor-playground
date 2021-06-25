@@ -21,6 +21,8 @@ public func configure(_ app: Application) throws {
     
     // MARK: Use database
     
+    app.caches.use(.fluent)
+    
     if (app.environment == .testing) {
         app.databases.use(.postgres(
             hostname: "localhost",
@@ -56,6 +58,8 @@ public func configure(_ app: Application) throws {
     
     // MARK: Migration scripts
     
+    app.migrations.add(CacheEntry.migration)
+    
     app.migrations.add(CreateUser_v100())
     app.migrations.add(CreateToken_v100())
     app.migrations.add(CreateResetPasswordToken_v100())
@@ -65,6 +69,7 @@ public func configure(_ app: Application) throws {
     
     app.migrations.add(CreateUser_v110())
     app.migrations.add(CreateCategory_v110())
+    app.migrations.add(CreatePokemon_v110())
     
     
     
