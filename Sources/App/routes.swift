@@ -19,6 +19,10 @@ func routes(_ app: Application) throws {
         return promise.futureResult
     }
     
+    try app.group(SecretMiddleware.detect()) { secretGroup in
+        try secretGroup.register(collection: TodosController())
+    }
+    
     // MARK: Api
     let api = app.grouped("api", "v1")
     

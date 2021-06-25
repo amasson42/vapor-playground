@@ -26,6 +26,9 @@ struct TILEnv {
     let SENDGRID_API_KEY: String?
     let SENDGRID_SENDER_EMAIL: String?
     
+    // MARK: Secret middleware
+    let X_SECRET: String
+    
     // MARK: Initialization
     
     struct MissingKeysError: Error {
@@ -74,6 +77,8 @@ struct TILEnv {
         
         self.SENDGRID_API_KEY = getOptionnal("SENDGRID_API_KEY", message: "No Mailer for you !")
         self.SENDGRID_SENDER_EMAIL = getOptionnal("SENDGRID_SENDER_EMAIL")
+        
+        self.X_SECRET = getDefaultString("X_SECRET", def: "security-expert")
         
         if !missingRequiredKeys.isEmpty {
             throw MissingKeysError(keys: missingRequiredKeys)

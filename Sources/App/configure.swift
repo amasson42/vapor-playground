@@ -10,6 +10,8 @@ import SendGrid
 // configures your application
 public func configure(_ app: Application) throws {
     
+    app.middleware.use(LogMiddleware())
+    
     app.middleware.use(FileMiddleware(publicDirectory: app.directory.publicDirectory))
     app.middleware.use(app.sessions.middleware)
     
@@ -70,6 +72,7 @@ public func configure(_ app: Application) throws {
     app.migrations.add(CreateUser_v110())
     app.migrations.add(CreateCategory_v110())
     app.migrations.add(CreatePokemon_v110())
+    app.migrations.add(CreateTodo_v110())
     
     
     
