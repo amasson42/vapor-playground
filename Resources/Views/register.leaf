@@ -30,6 +30,11 @@
     </div>
 
     <div class="form-group">
+        <label for="twitterUrl">Twitter handle</label>
+        <input type="text" name="twitterUrl" class="form-control" id="twitterUrl" value="@" />
+    </div>
+
+    <div class="form-group">
         <label for="password">Password</label>
         <input type="password" name="password" class="form-control" id="password" />
     </div>

@@ -63,6 +63,9 @@ public func configure(_ app: Application) throws {
     app.migrations.add(CreateCategory_v100())
     app.migrations.add(CreateAcronymCategoryPivot_v100())
     
+    app.migrations.add(CreateUser_v110())
+    app.migrations.add(CreateCategory_v110())
+    
     
     
     if app.environment == .development || app.environment == .testing {

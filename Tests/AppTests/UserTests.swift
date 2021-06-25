@@ -7,6 +7,7 @@ final class UserTests: XCTestCase {
     let usersURI = "/api/v1/users/"
     let usersName = "Alice"
     let usersUsername = "alicea"
+    let usersTwitterUrl = "@alicea"
     let usersPassword = "securityprofesional"
     let usersEmail = "alicea@whatever.yolo"
     
@@ -45,7 +46,8 @@ final class UserTests: XCTestCase {
             name: usersName,
             username: usersUsername,
             password: usersPassword,
-            email: usersEmail)
+            email: usersEmail,
+            twitterUrl: usersTwitterUrl)
         
         try app.test(
             .POST, usersURI,
@@ -67,6 +69,7 @@ final class UserTests: XCTestCase {
                         XCTAssertEqual(users.count, 2)
                         XCTAssertEqual(users[1].name, usersName)
                         XCTAssertEqual(users[1].username, usersUsername)
+                        XCTAssertEqual(users[1].twitterUrl, usersTwitterUrl)
                         XCTAssertEqual(users[1].id, receivedUser.id)
                         
                     })

@@ -61,6 +61,7 @@ struct HomeWebController: RouteCollection {
         let password: String
         let confirmPassword: String
         let emailAddress: String
+        let twitterUrl: String
         
         static func validations(_ validations: inout Validations) {
             validations.add("name", as: String.self, is: .ascii)
@@ -68,6 +69,7 @@ struct HomeWebController: RouteCollection {
             validations.add("password", as: String.self, is: .count(8...))
             validations.add("zipCode", as: String.self, is: .zipCode, required: false)
             validations.add("emailAddress", as: String.self, is: .email)
+            validations.add("twitterUrl", as: String.self, is: .twitterHandle)
         }
         
     }
@@ -93,7 +95,8 @@ struct HomeWebController: RouteCollection {
             name: data.name,
             username: data.username,
             password: password,
-            email: data.emailAddress)
+            email: data.emailAddress,
+            twitterUrl: data.twitterUrl.isEmpty ? nil : data.twitterUrl)
         
         return user.save(on: req.db).map {
             req.auth.login(user)
@@ -310,6 +313,39 @@ extension Validator where T == String {
                 return ValidatorResults.ZipCode(isValidZipCode: false)
             }
             return ValidatorResults.ZipCode(isValidZipCode: true)
+        }
+    }
+}
+
+extension ValidatorResults {
+    struct TwitterHandle: ValidatorResult {
+        let isValidTwitterHandle: Bool
+        
+        var isFailure: Bool {
+            !isValidTwitterHandle
+        }
+        
+        var successDescription: String? { "is a valid twitter handle" }
+        var failureDescription: String? { "is not a valid twitter handle" }
+    }
+}
+
+extension Validator where T == String {
+    private static var twitterHandleRegex: String {
+        "^$|@([A-Za-z0-9_]+)?$"
+    }
+    
+    public static var twitterHandle: Validator<T> {
+        Validator { input -> ValidatorResult in
+            guard let range = input.range(
+                    of: twitterHandleRegex,
+                    options: [.regularExpression]),
+                  range.lowerBound == input.startIndex
+                    && range.upperBound == input.endIndex
+            else {
+                return ValidatorResults.TwitterHandle(isValidTwitterHandle: false)
+            }
+            return ValidatorResults.TwitterHandle(isValidTwitterHandle: true)
         }
     }
 }

@@ -22,6 +22,22 @@ struct CreateUser_v100: Migration {
     
 }
 
+struct CreateUser_v110: Migration {
+    
+    func prepare(on database: Database) -> EventLoopFuture<Void> {
+        database.schema(User.v100.schema)
+            .field(User.v110.twitterUrl, .string)
+            .update()
+    }
+    
+    func revert(on database: Database) -> EventLoopFuture<Void> {
+        database.schema(User.v100.schema)
+            .deleteField(User.v110.twitterUrl)
+            .update()
+    }
+    
+}
+
 extension User {
     enum v100 {
         static let schema = "users"
@@ -32,6 +48,10 @@ extension User {
         static let password: FieldKey = "password"
         static let email: FieldKey = "email"
         static let profilePicture: FieldKey = "profilePicture"
+    }
+    
+    enum v110 {
+        static let twitterUrl: FieldKey = "twitterUrl"
     }
 }
 

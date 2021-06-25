@@ -15,6 +15,22 @@ struct CreateCategory_v100: Migration {
     
 }
 
+struct CreateCategory_v110: Migration {
+    
+    func prepare(on database: Database) -> EventLoopFuture<Void> {
+        database.schema(Category.v100.schema)
+            .unique(on: Category.v100.name)
+            .update()
+    }
+    
+    func revert(on database: Database) -> EventLoopFuture<Void> {
+        database.schema(Category.v100.schema)
+            .deleteUnique(on: Category.v100.name)
+            .update()
+    }
+    
+}
+
 extension Category {
     enum v100 {
         static let schema = "categories"
