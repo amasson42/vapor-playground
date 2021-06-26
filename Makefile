@@ -4,6 +4,14 @@ NAME=tilApp
 LISTEN_HOSTNAME=0.0.0.0
 LISTEN_PORT=8080
 
+UNAME_S := $(shell uname -s)
+ifeq ($(UNAME_S), Linux)
+	KILLCMD := sudo kill -9 `sudo lsof -t -i:$(LISTEN_PORT)` || :
+endif
+ifeq ($(UNAME_S), Darwin)
+	KILLCMD := npx kill-port $(LISTEN_PORT)
+endif
+
 # By default run the program
 all: run
 
@@ -33,7 +41,8 @@ run: $(NAME) kill
 
 # Release the port that used our port
 kill:
-	npx kill-port $(LISTEN_PORT)
+	docker-compose down
+	$(KILLCMD)
 
 # Execute the unit tests with the services dependencies
 test: build

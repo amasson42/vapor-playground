@@ -97,6 +97,7 @@ services:
       DATABASE_PASSWORD: vapor_password
       DATABASE_PORT: 5432
       REDIS_HOST: db-redis-test
+      REDIS_PORT: 6379
   db-test:
     profiles:
       - testing
@@ -114,4 +115,4 @@ services:
       - testing
     image: redis:6-alpine
     ports:
-      - '6379:6379'
+      - '6378:6379'

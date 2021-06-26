@@ -32,7 +32,9 @@ public func configure(_ app: Application) throws {
             password: Environment.get("DATABASE_PASSWORD") ?? "vapor_password",
             database: Environment.get("DATABASE_NAME") ?? "vapor-test"
         ), as: .psql)
-        app.redis.configuration = try RedisConfiguration(hostname: Environment.get("REDIS_HOST") ?? "localhost")
+        app.redis.configuration = try RedisConfiguration(
+            hostname: Environment.get("REDIS_HOST") ?? "localhost",
+            port: Environment.get("REDIS_PORT")?.toInt ?? 6378)
     } else {
         app.databases.use(.postgres(
             hostname: Environment.tilEnv.DATABASE_HOST,
@@ -41,7 +43,9 @@ public func configure(_ app: Application) throws {
             password: Environment.tilEnv.DATABASE_PASSWORD,
             database: Environment.tilEnv.DATABASE_NAME
         ), as: .psql)
-        app.redis.configuration = try RedisConfiguration(hostname: Environment.tilEnv.REDIS_HOST)
+        app.redis.configuration = try RedisConfiguration(
+            hostname: Environment.tilEnv.REDIS_HOST,
+            port: Environment.tilEnv.REDIS_PORT)
     }
     app.caches.use(.redis)
     
