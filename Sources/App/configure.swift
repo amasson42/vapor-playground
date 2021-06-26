@@ -6,6 +6,7 @@ import FluentMySQLDriver
 import FluentMongoDriver
 import Leaf
 import SendGrid
+import Redis
 
 // configures your application
 public func configure(_ app: Application) throws {
@@ -23,16 +24,15 @@ public func configure(_ app: Application) throws {
     
     // MARK: Use database
     
-    app.caches.use(.fluent)
-    
     if (app.environment == .testing) {
         app.databases.use(.postgres(
-            hostname: "localhost",
+            hostname: Environment.get("DATABASE_HOST") ?? "localhost",
             port: Environment.get("DATABASE_PORT")?.toInt ?? 5433,
-            username: "vapor_username",
-            password: "vapor_password",
-            database: "vapor-test"
+            username: Environment.get("DATABASE_USERNAME") ?? "vapor_username",
+            password: Environment.get("DATABASE_PASSWORD") ?? "vapor_password",
+            database: Environment.get("DATABASE_NAME") ?? "vapor-test"
         ), as: .psql)
+        app.redis.configuration = try RedisConfiguration(hostname: Environment.get("REDIS_HOST") ?? "localhost")
     } else {
         app.databases.use(.postgres(
             hostname: Environment.tilEnv.DATABASE_HOST,
@@ -41,7 +41,9 @@ public func configure(_ app: Application) throws {
             password: Environment.tilEnv.DATABASE_PASSWORD,
             database: Environment.tilEnv.DATABASE_NAME
         ), as: .psql)
+        app.redis.configuration = try RedisConfiguration(hostname: Environment.tilEnv.REDIS_HOST)
     }
+    app.caches.use(.redis)
     
 //    app.databases.use(.mysql(
 //        hostname: Environment.tilEnv.DATABASE_HOST,

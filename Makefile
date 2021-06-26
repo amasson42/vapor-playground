@@ -38,7 +38,7 @@ kill:
 # Execute the unit tests with the services dependencies
 test: build
 	docker-compose --profile testing up -d db-test
-	@swift test && echo TEST SUCCESS || echo TEST FAILED
+	swift test && echo TEST SUCCESS || echo TEST FAILED
 	docker-compose --profile testing down -v
 
 # Execute the unit tests in a docker image with services dependencies

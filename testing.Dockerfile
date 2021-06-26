@@ -1,12 +1,13 @@
 # ================================
 # Testing image
 # ================================
-FROM swift:5.3-focal
+FROM swift:5.4-focal
 
 # Install OS updates and, if needed, sqlite3
 RUN export DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true \
     && apt-get -q update \
     && apt-get -q dist-upgrade -y \
+    && apt-get -q install libsqlite3-dev -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Set up a build area
@@ -22,8 +23,8 @@ RUN swift package resolve
 # Copy entire repo into container
 COPY . .
 
-# Build everything, with optimizations and test discovery
-RUN swift build --enable-test-discovery
+# Build everything with test discovery
+RUN swift build
 
 # Start the package tests when the image runs
-CMD ["swift", "test", "--enable-test-discovery"]
+CMD ["swift", "test"]

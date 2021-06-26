@@ -3,15 +3,23 @@ import XCTVapor
 
 final class AppTests: XCTestCase {
     
-    func testHelloWorld() throws {
-        let app = Application(.testing)
-        defer { app.shutdown() }
-        try configure(app)
-
-        try app.test(.GET, "hello/marcus/0", afterResponse: { res in
-            XCTAssertEqual(res.status, .ok)
-            XCTAssertEqual(res.body.string, "Hello marcus\n")
-        })
+    var app: Application!
+    
+    override func setUpWithError() throws {
+        app = try Application.testable()
+    }
+    
+    override func tearDownWithError() throws {
+        app?.shutdown()
+    }
+    
+    func testGetHome() throws {
+        try app.test(
+            .GET, "/",
+            afterResponse: { response in
+                XCTAssertEqual(response.status, .ok)
+            }
+        )
     }
     
 }

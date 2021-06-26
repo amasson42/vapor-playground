@@ -2,4 +2,8 @@
 .swiftpm/
 db.sqlite
 tilApp
+Dockerfile
+testing.Dockerfile
+docker-compose.yml
+Makefile
 Package.resolved

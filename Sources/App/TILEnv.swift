@@ -11,6 +11,7 @@ struct TILEnv {
     let DATABASE_USERNAME: String
     let DATABASE_PASSWORD: String
     let DATABASE_NAME: String
+    let REDIS_HOST: String
     
     // MARK: Sign in with Google
     let GOOGLE_CALLBACK_URL: String? // http://localhost:8080/oauth/google
@@ -66,6 +67,7 @@ struct TILEnv {
         self.DATABASE_USERNAME = getDefaultString("DATABASE_USERNAME", def: "vapor_username")
         self.DATABASE_PASSWORD = getDefaultString("DATABASE_PASSWORD", def: "vapor_password")
         self.DATABASE_NAME = getDefaultString("DATABASE_NAME", def: "vapor_database")
+        self.REDIS_HOST = getDefaultString("REDIS_HOST", def: "localhost")
         
         self.GOOGLE_CALLBACK_URL = getOptionnal("GOOGLE_CALLBACK_URL", message: "No Google for you !")
         self.GOOGLE_CLIENT_ID = getOptionnal("GOOGLE_CLIENT_ID")

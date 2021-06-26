@@ -18,6 +18,7 @@ let package = Package(
         .package(url: "https://github.com/vapor-community/Imperial.git", from: "1.0.0"),
         .package(url: "https://github.com/vapor/jwt.git", from: "4.0.0"),
         .package(url: "https://github.com/vapor-community/sendgrid.git", from: "4.0.0"),
+        .package(url: "https://github.com/vapor/redis.git", from: "4.0.0"),
     ],
     targets: [
         .target(
@@ -34,6 +35,7 @@ let package = Package(
                 .product(name: "ImperialGitHub", package: "Imperial"),
                 .product(name: "JWT", package: "jwt"),
                 .product(name: "SendGrid", package: "sendgrid"),
+                .product(name: "Redis", package: "redis")
             ],
             swiftSettings: [
                 // Enable better optimizations when building in Release configuration. Despite the use of

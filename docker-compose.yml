@@ -26,6 +26,7 @@ x-shared_environment: &shared_environment
   DATABASE_NAME: vapor_database
   DATABASE_USERNAME: vapor_username
   DATABASE_PASSWORD: vapor_password
+  REDIS_HOST: db-redis
 
 services:
   app:
@@ -75,6 +76,12 @@ services:
       POSTGRES_DB: vapor_database
     ports:
       - '5432:5432'
+    depends_on:
+      - db-redis
+  db-redis:
+    image: redis:6-alpine
+    ports:
+      - '6379:6379'
   app-test:
     profiles:
       - testing
@@ -84,10 +91,12 @@ services:
       context: .
       dockerfile: testing.Dockerfile
     environment:
+      DATABASE_HOST: db-test
       DATABASE_NAME: vapor-test
       DATABASE_USERNAME: vapor_username
       DATABASE_PASSWORD: vapor_password
       DATABASE_PORT: 5432
+      REDIS_HOST: db-redis-test
   db-test:
     profiles:
       - testing
@@ -98,3 +107,11 @@ services:
       POSTGRES_DB: vapor-test
     ports:
       - '5433:5432'
+    depends_on:
+      - db-redis-test
+  db-redis-test:
+    profiles:
+      - testing
+    image: redis:6-alpine
+    ports:
+      - '6379:6379'

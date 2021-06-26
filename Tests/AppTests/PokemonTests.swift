@@ -136,10 +136,6 @@ final class PokemonTests: XCTestCase {
     
     func testValidPokemonCachedFromTheAPI() throws {
         
-        try XCTAssertTrue((app.db as? SQLDatabase)?
-                            .raw("SELECT * FROM _fluent_cache;")
-                            .all().wait().isEmpty == true)
-        
         for pokemonName in existingPokemons {
             var pokemon = Pokemon(name: pokemonName)
             
@@ -178,10 +174,6 @@ final class PokemonTests: XCTestCase {
             print("Post Times Ratio: \(secondPostTime / firstPostTime)")
             
         }
-        
-        try XCTAssertEqual((app.db as? SQLDatabase)?
-                            .raw("SELECT * FROM _fluent_cache;")
-                            .all().wait().count, existingPokemons.count)
         
     }
     
