@@ -23,8 +23,8 @@ RUN swift package resolve
 # Copy entire repo into container
 COPY . .
 
-# Build everything with test discovery
-RUN swift build
+# Build app and tests before the command execution
+RUN swift build --build-tests
 
 # Start the package tests when the image runs
 CMD ["swift", "test"]
