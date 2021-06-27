@@ -38,6 +38,32 @@ struct CreateUser_v110: Migration {
     
 }
 
+struct CreateUser_v120: Migration {
+
+    func prepare(on database: Database) -> EventLoopFuture<Void> {
+        database.enum(User.v120.userTypeName, reflecting: UserType.self)
+            .create().flatMap { userType in
+            database.schema(User.v100.schema)
+                .field(User.v120.userType, userType, .required, .sql(.default(UserType.standard.rawValue)))
+                .field(User.v120.createdAt, .datetime)
+                .field(User.v120.deletedAt, .datetime)
+                .update()
+        }
+    }
+
+    func revert(on database: Database) -> EventLoopFuture<Void> {
+        database.schema(User.v100.schema)
+            .deleteField(User.v120.deletedAt)
+            .deleteField(User.v120.createdAt)
+            .deleteField(User.v120.userType)
+            .update()
+            .flatMap {
+                database.enum(User.v120.userTypeName).delete()
+            }
+    }
+
+}
+
 extension User {
     enum v100 {
         static let schema = "users"
@@ -52,6 +78,13 @@ extension User {
     
     enum v110 {
         static let twitterUrl: FieldKey = "twitterUrl"
+    }
+
+    enum v120 {
+        static let createdAt: FieldKey = "created_at"
+        static let deletedAt: FieldKey = "deleted_at"
+        static let userType: FieldKey = "userType"
+        static let userTypeName = "userType"
     }
 }
 
@@ -70,7 +103,8 @@ struct CreateAdminUser: Migration {
                 name: Self.defaultName,
                 username: Self.defaultUsername,
                 password: Bcrypt.hash(Self.defaultPassword),
-                email: Self.defaultEmail)
+                email: Self.defaultEmail,
+                userType: .admin)
                 .save(on: database)
         } catch {
             return database.eventLoop.future(error: error)

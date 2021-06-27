@@ -18,6 +18,24 @@ struct CreateAcronym_v100: Migration {
     
 }
 
+struct CreateAcronym_v120: Migration {
+
+    func prepare(on database: Database) -> EventLoopFuture<Void> {
+        database.schema(Acronym.v100.schema)
+            .field(Acronym.v120.createdAt, .datetime)
+            .field(Acronym.v120.updatedAt, .datetime)
+            .update()
+    }
+
+    func revert(on database: Database) -> EventLoopFuture<Void> {
+        database.schema(Acronym.v100.schema)
+            .deleteField(Acronym.v120.updatedAt)
+            .deleteField(Acronym.v120.createdAt)
+            .update()
+    }
+
+}
+
 extension Acronym {
     enum v100 {
         static let schema = "acronyms"
@@ -26,5 +44,10 @@ extension Acronym {
         static let short: FieldKey = "short"
         static let long: FieldKey = "long"
         static let userID: FieldKey = "userID"
+    }
+
+    enum v120 {
+        static let createdAt: FieldKey = "created_at"
+        static let updatedAt: FieldKey = "updated_at"
     }
 }

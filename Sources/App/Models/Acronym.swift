@@ -6,7 +6,7 @@ final class Acronym: Model, Content {
     
     @ID
     var id: UUID?
-    
+
     @Field(key: v100.short)
     var short: String
     
@@ -21,6 +21,12 @@ final class Acronym: Model, Content {
               to: \.$category)
     var categories: [Category]
     
+    @Timestamp(key: v120.createdAt, on: .create)
+    var createdAt: Date?
+
+    @Timestamp(key: v120.updatedAt, on: .update)
+    var updatedAt: Date?
+
     init() {}
     
     init(id: UUID? = nil, short: String, long: String, userID: User.IDValue) {

@@ -96,4 +96,64 @@ final class CategoryTests: XCTestCase {
             }
         })
     }
+
+    func testCategoriesGetAll() throws {
+
+        let users: [App.User] = try [
+            User.create(name: "Jean", username: "jean", on: app.db),
+            User.create(name: "Pierre", username: "pierre", on: app.db)
+        ]
+
+        let categoryNames = ["Trading", "Gaming"]
+        let categories: [App.Category] = try categoryNames.map {
+            try Category.create(name: $0, on: app.db)
+        }
+
+        let acronyms: [App.Acronym] = try [
+            Acronym.create(
+                short: "WTS", long: "Want To Sell",
+                user: users[0], on: app.db),
+            Acronym.create(
+                short: "WTB", long: "Want To Buy",
+                user: users[1], on: app.db),
+            Acronym.create(
+                short: "LFG", long: "Look For Group",
+                user: users[0], on: app.db)
+        ]
+
+        try acronyms[0].$categories.attach(categories[0], on: app.db).wait()
+        try acronyms[1].$categories.attach(categories[0], on: app.db).wait()
+        try acronyms[2].$categories.attach(categories[1], on: app.db).wait()
+
+        try app.test(
+            .GET, "\(categoriesURI)all",
+            afterResponse: { response in
+                XCTAssertEqual(response.status, .ok)
+                let allCategories = try response.content.decode([App.CategoriesController.CategoryWithAcronyms].self)
+
+                XCTAssertEqual(allCategories.count, categories.count)
+                guard allCategories.count == categories.count else {
+                    return
+                }
+                for i in 0 ..< allCategories.count {
+                    XCTAssertEqual(allCategories[i].id, categories[i].id)
+                    XCTAssertEqual(allCategories[i].name, categories[i].name)
+                }
+                XCTAssertEqual(allCategories[0].acronyms.count, 2)
+                XCTAssertEqual(allCategories[1].acronyms.count, 1)
+                guard allCategories[0].acronyms.count == 2,
+                    allCategories[1].acronyms.count == 1 else {
+                        return
+                    }
+                XCTAssertEqual(allCategories[0].acronyms[0].id, acronyms[0].id)
+                XCTAssertEqual(allCategories[0].acronyms[0].user.id, users[0].id)
+
+                XCTAssertEqual(allCategories[0].acronyms[1].id, acronyms[1].id)
+                XCTAssertEqual(allCategories[0].acronyms[1].user.id, users[1].id)
+
+                XCTAssertEqual(allCategories[1].acronyms[0].id, acronyms[2].id)
+                XCTAssertEqual(allCategories[1].acronyms[0].user.id, users[0].id)
+                
+            })
+    }
 }

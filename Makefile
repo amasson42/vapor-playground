@@ -47,7 +47,7 @@ build_docker:           ## Build the docker image
 	docker-compose build app
 
 run_docker:             ## Run the docker image with the services dependencies
-	docker-compose up app
+	docker-compose up --build app
 
 test_docker:            ## Execute the unit tests in a docker image with services dependencies
 	docker-compose --profile testing up --build --abort-on-container-exit app-test

@@ -47,6 +47,7 @@ public func configure(_ app: Application) throws {
             hostname: Environment.tilEnv.REDIS_HOST,
             port: Environment.tilEnv.REDIS_PORT)
     }
+    app.databases.middleware.use(UserMiddleware(), on: .psql)
     app.caches.use(.redis)
     
 //    app.databases.use(.mysql(
@@ -79,6 +80,9 @@ public func configure(_ app: Application) throws {
     app.migrations.add(CreateCategory_v110())
     app.migrations.add(CreatePokemon_v110())
     app.migrations.add(CreateTodo_v110())
+    
+    app.migrations.add(CreateUser_v120())
+    app.migrations.add(CreateAcronym_v120())
     
     
     

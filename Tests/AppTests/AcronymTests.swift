@@ -187,6 +187,30 @@ final class AcronymTests: XCTestCase {
         })
     }
     
+    func testSortingDateAcronyms() throws {
+        let short2 = "LOL"
+        let long2 = "Laugh Out Loud"
+        let acronym0 = try Acronym.create(short: short2, long: long2, on: app.db)
+        let acronym1 = try Acronym.create(short: acronymShort, long: acronymLong, on: app.db)
+        
+        try app.test(.GET, "\(acronymsURI)sorted/recent", afterResponse: { response in
+            let sortedAcronyms = try response.content.decode([Acronym].self)
+            XCTAssertEqual(sortedAcronyms[0].id, acronym1.id)
+            XCTAssertEqual(sortedAcronyms[1].id, acronym0.id)
+        })
+    }
+    
+    func testFirstSortedDateAcronyms() throws {
+        let short2 = "LOL"
+        let long2 = "Laugh Out Loud"
+        _ = try Acronym.create(short: short2, long: long2, on: app.db)
+        let acronym0 = try Acronym.create(short: acronymShort, long: acronymLong, on: app.db)
+        
+        try app.test(.GET, "\(acronymsURI)sorted/recent/first", afterResponse: { response in
+            let firstAcronym = try response.content.decode(Acronym.self)
+            XCTAssertEqual(firstAcronym.id, acronym0.id)
+        })
+    }
     
     func testGettingAnAcronymsUser() throws {
         let user = try User.create(on: app.db)

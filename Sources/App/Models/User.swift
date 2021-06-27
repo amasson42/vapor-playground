@@ -1,5 +1,12 @@
 import Vapor
 import Fluent
+import Foundation
+
+enum UserType: String, CaseIterable, Codable {
+    case admin
+    case standard
+    case restricted
+}
 
 final class User: Model, Content {
     static let schema = v100.schema
@@ -18,6 +25,9 @@ final class User: Model, Content {
     
     @Field(key: v100.email)
     var email: String
+
+    @Enum(key: v120.userType)
+    var userType: UserType
     
     @OptionalField(key: v110.twitterUrl)
     var twitterUrl: String?
@@ -28,15 +38,24 @@ final class User: Model, Content {
     @Children(for: \.$user)
     var acronyms: [Acronym]
     
+    @Timestamp(key: v120.createdAt, on: .create)
+    var createdAt: Date?
+
+    @Timestamp(key: v120.deletedAt, on: .delete)
+    var deletedAt: Date?
+
     init() {}
     
     init(id: UUID? = nil, name: String,
-         username: String, password: String, email: String,
+         username: String, password: String,
+         email: String,
+         userType: UserType = .standard,
          twitterUrl: String? = nil, profilePicture: String? = nil) {
         self.name = name
         self.username = username
         self.password = password
         self.email = email
+        self.userType = userType
         self.twitterUrl = twitterUrl
         self.profilePicture = profilePicture
     }

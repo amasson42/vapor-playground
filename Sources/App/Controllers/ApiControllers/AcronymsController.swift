@@ -1,8 +1,9 @@
 import Vapor
 import Fluent
+import SQLKit
 
 struct AcronymsController: RouteCollection {
-//    tEs5b0RRV5mszJ9y/wb69A==
+
     func boot(routes: RoutesBuilder) throws {
         let group = routes.grouped("acronyms")
         
@@ -12,13 +13,10 @@ struct AcronymsController: RouteCollection {
         group.get("first", use: handleGetFirst)
         group.get("sorted", use: handleGetSorted)
         group.get("sorted", "first", use: handleGetSortedFirst)
+        group.get("sorted", "recent", use: handleGetSortedRecent)
+        group.get("sorted", "recent", "first", use: handleGetSortedRecentFirst)
         group.get(":acronymID", "user", use: handleGetUser)
         group.get(":acronymID", "categories", use: handleGetCategories)
-        
-//        let basicMiddleware = User.authenticator()
-//        let guardAuthMiddleware = User.guardMiddleware()
-//        let protected = group.grouped(basicMiddleware, guardAuthMiddleware)
-//        protected.post(use: handlePost)
         
         let tokenAuthMiddleware = Token.authenticator()
         let guardAuthMiddleware = User.guardMiddleware()
@@ -46,7 +44,14 @@ struct AcronymsController: RouteCollection {
     }
     
     func handleGet(_ req: Request) -> EventLoopFuture<[Acronym]> {
-        return Acronym.query(on: req.db).all()
+        // Because we like it raw
+        if Bool.random(),
+            let sql = req.db as? SQLDatabase {
+            return sql.raw("SELECT * FROM acronyms")
+                .all(decoding: Acronym.self)
+        } else {
+            return Acronym.query(on: req.db).all()
+        }
     }
     
     func handleGetOne(_ req: Request) -> EventLoopFuture<Acronym> {
@@ -84,7 +89,20 @@ struct AcronymsController: RouteCollection {
             .first()
             .unwrap(or: Abort(.notFound))
     }
+
+    func handleGetSortedRecent(_ req: Request) -> EventLoopFuture<[Acronym]> {
+        Acronym.query(on: req.db)
+            .sort(\.$updatedAt, .descending)
+            .all()
+    }
     
+    func handleGetSortedRecentFirst(_ req: Request) -> EventLoopFuture<Acronym> {
+        Acronym.query(on: req.db)
+            .sort(\.$updatedAt, .descending)
+            .first()
+            .unwrap(or: Abort(.notFound))
+    }
+
     func handleGetUser(_ req: Request) -> EventLoopFuture<User.Public> {
         Acronym.find(req.parameters.get("acronymID"), on: req.db)
             .unwrap(or: Abort(.notFound))

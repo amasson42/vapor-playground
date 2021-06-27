@@ -6,6 +6,7 @@ extension User {
     static func create(name: String = "Luke",
                        username: String? = nil,
                        password: String = "password",
+                       userType: UserType = .standard,
                        on database: Database) throws -> User {
         
         let username = username ?? UUID().uuidString

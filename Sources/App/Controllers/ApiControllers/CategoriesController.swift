@@ -9,7 +9,8 @@ struct CategoriesController: RouteCollection {
         group.get(":categoryID", use: handleGetOne)
         group.get("pivots", use: handleGetPivots)
         group.get(":categoryID", "acronyms", use: handleGetAcronyms)
-        
+        group.get("all", use: handleGetAll)
+
         let tokenAuthMiddleware = Token.authenticator()
         let guardAuthMiddleware = User.guardMiddleware()
         let tokenAuthGroup = group.grouped(tokenAuthMiddleware, guardAuthMiddleware)
@@ -41,6 +42,40 @@ struct CategoriesController: RouteCollection {
             .unwrap(or: Abort(.notFound))
             .flatMap { category in
                 category.$acronyms.get(on: req.db)
+            }
+    }
+
+    struct CategoryWithAcronyms: Content {
+        let id: UUID?
+        let name: String
+        let acronyms: [AcronymWithUser]
+        struct AcronymWithUser: Content {
+            let id: UUID?
+            let short: String
+            let long: String
+            let user: User.Public
+        }
+    }
+
+    func handleGetAll(_ req: Request) -> EventLoopFuture<[CategoryWithAcronyms]> {
+        Category.query(on: req.db)
+            .with(\.$acronyms) { acronyms in
+                acronyms.with(\.$user)
+            }.all().map { categories in
+                categories.map { category in
+                    let categoryAcronyms = category.acronyms.map { acronym in
+                        CategoryWithAcronyms.AcronymWithUser(
+                            id: acronym.id,
+                            short: acronym.short,
+                            long: acronym.long,
+                            user: acronym.user.public())
+                    }
+
+                    return CategoryWithAcronyms(
+                        id: category.id,
+                        name: category.name,
+                        acronyms: categoryAcronyms)
+                }
             }
     }
     

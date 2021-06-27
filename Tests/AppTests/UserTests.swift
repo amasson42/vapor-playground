@@ -94,7 +94,137 @@ final class UserTests: XCTestCase {
                 
             })
     }
+
+    func testDeletingSingleUser() throws {
+        let user = try User.create(
+            name: usersName,
+            username: usersUsername,
+            on: app.db)
+        
+        try app.test(
+            .GET, "\(usersURI)\(user.id!)",
+            afterResponse: { XCTAssertEqual($0.status, .ok) })
+
+        try app.test(
+            .DELETE, "\(usersURI)\(user.id!)",
+            loggedInRequest: true,
+            afterResponse: { XCTAssertEqual($0.status, .noContent) })
+
+        try app.test(
+            .GET, "\(usersURI)\(user.id!)",
+            afterResponse: { XCTAssertEqual($0.status, .notFound) })
+    }
+
+    func testDeletingAndRestoringSingleUser() throws {
+        let user = try User.create(
+            name: usersName,
+            username: usersUsername,
+            on: app.db)
+        
+        try app.test(
+            .GET, "\(usersURI)\(user.id!)",
+            afterResponse: { XCTAssertEqual($0.status, .ok) })
+
+        try app.test(
+            .DELETE, "\(usersURI)\(user.id!)",
+            loggedInRequest: true,
+            afterResponse: { XCTAssertEqual($0.status, .noContent) })
+
+        try app.test(
+            .GET, "\(usersURI)\(user.id!)",
+            afterResponse: { XCTAssertEqual($0.status, .notFound) })
+        
+        try app.test(
+            .POST, "\(usersURI)\(user.id!)/restore",
+            loggedInRequest: true,
+            afterResponse: { XCTAssertEqual($0.status, .ok) })
+
+        try app.test(
+            .GET, "\(usersURI)\(user.id!)",
+            afterResponse: { XCTAssertEqual($0.status, .ok) })
+    }
     
+    func testForceDeletingUser() throws {
+        let user = try User.create(
+            name: usersName,
+            username: usersUsername,
+            on: app.db)
+        
+        try app.test(
+            .GET, "\(usersURI)\(user.id!)",
+            afterResponse: { XCTAssertEqual($0.status, .ok) })
+
+        try app.test(
+            .DELETE, "\(usersURI)\(user.id!)/force",
+            loggedInRequest: true,
+            afterResponse: { XCTAssertEqual($0.status, .noContent) })
+
+        try app.test(
+            .GET, "\(usersURI)\(user.id!)",
+            afterResponse: { XCTAssertEqual($0.status, .notFound) })
+        
+        try app.test(
+            .POST, "\(usersURI)\(user.id!)/restore",
+            loggedInRequest: true,
+            afterResponse: { XCTAssertEqual($0.status, .notFound) })
+
+        try app.test(
+            .GET, "\(usersURI)\(user.id!)",
+            afterResponse: { XCTAssertEqual($0.status, .notFound) })
+    }
+
+    func testDeletingSingleUserForbidden() throws {
+        let user = try User.create(
+            name: usersName,
+            username: usersUsername,
+            on: app.db)
+        
+        let restrictedUser = try User.create(
+            name: "Pleb",
+            username: "pleb",
+            userType: .restricted,
+            on: app.db)
+        
+        try app.test(
+            .GET, "\(usersURI)\(user.id!)",
+            afterResponse: { XCTAssertEqual($0.status, .ok) })
+
+        try app.test(
+            .DELETE, "\(usersURI)\(user.id!)",
+            loggedInUser: restrictedUser,
+            afterResponse: { XCTAssertEqual($0.status, .forbidden) })
+
+        try app.test(
+            .GET, "\(usersURI)\(user.id!)",
+            afterResponse: { XCTAssertEqual($0.status, .ok) })
+    }
+
+    func testDeletingForceSingleUserForbidden() throws {
+        let user = try User.create(
+            name: usersName,
+            username: usersUsername,
+            on: app.db)
+        
+        let restrictedUser = try User.create(
+            name: "Pleb",
+            username: "pleb",
+            userType: .restricted,
+            on: app.db)
+        
+        try app.test(
+            .GET, "\(usersURI)\(user.id!)",
+            afterResponse: { XCTAssertEqual($0.status, .ok) })
+
+        try app.test(
+            .DELETE, "\(usersURI)\(user.id!)/force",
+            loggedInUser: restrictedUser,
+            afterResponse: { XCTAssertEqual($0.status, .forbidden) })
+
+        try app.test(
+            .GET, "\(usersURI)\(user.id!)",
+            afterResponse: { XCTAssertEqual($0.status, .ok) })
+    }
+
     func testGettingAUsersAcronymsFromTheAPI() throws {
         let user = try User.create(on: app.db)
         
@@ -121,6 +251,35 @@ final class UserTests: XCTestCase {
                         XCTAssertEqual(acronyms[1].short, acronym1.short)
                         XCTAssertEqual(acronyms[1].long, acronym1.long)
                      })
+    }
+
+    func testGettingMostRecentAcronymUserFromTheApi() throws {
+        let user0 = try User.create(on: app.db)
+        let user1 = try User.create(on: app.db)
+        let user2 = try User.create(on: app.db)
+
+        _ = try Acronym.create(user: user0, on: app.db)
+        _ = try Acronym.create(user: user1, on: app.db)
+        _ = try Acronym.create(user: user2, on: app.db)
+
+        try app.test(
+            .GET, "\(usersURI)mostRecentAcronym",
+            afterResponse: { response in
+                let user = try response.content.decode(User.Public.self)
+                XCTAssertEqual(user.id, user2.id)
+            }
+        )
+
+        _ = try Acronym.create(user: user1, on: app.db)
+
+        try app.test(
+            .GET, "\(usersURI)mostRecentAcronym",
+            afterResponse: { response in
+                let user = try response.content.decode(User.Public.self)
+                XCTAssertEqual(user.id, user1.id)
+            }
+        )
+        
     }
     
 }
