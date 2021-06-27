@@ -18,15 +18,29 @@ struct TILEnv {
     let GOOGLE_CALLBACK_URL: String? // http://localhost:8080/oauth/google
     let GOOGLE_CLIENT_ID: String?
     let GOOGLE_CLIENT_SECRET: String?
+    var googleSetup: Bool {
+        return GOOGLE_CALLBACK_URL != nil
+            && GOOGLE_CLIENT_ID != nil
+            && GOOGLE_CLIENT_SECRET != nil
+    }
 
     // MARK: Sign in with GitHub
     let GITHUB_CALLBACK_URL: String? // http://localhost:8080/oauth/github
     let GITHUB_CLIENT_ID: String?
     let GITHUB_CLIENT_SECRET: String?
+    var githubSetup: Bool {
+        return GITHUB_CALLBACK_URL != nil
+            && GITHUB_CLIENT_ID != nil
+            && GITHUB_CLIENT_SECRET != nil
+    }
 
     // MARK: SendGrid mailer
     let SENDGRID_API_KEY: String?
     let SENDGRID_SENDER_EMAIL: String?
+    var sendgridSetup: Bool {
+        return SENDGRID_API_KEY != nil
+            && SENDGRID_SENDER_EMAIL != nil
+    }
     
     // MARK: Secret middleware
     let X_SECRET: String
