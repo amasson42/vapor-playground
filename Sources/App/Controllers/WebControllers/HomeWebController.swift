@@ -109,6 +109,8 @@ struct HomeWebController: RouteCollection {
         let title = "Log In"
         let userLoggedIn = false
         let loginError: Bool
+        let loginWithGoogle = Environment.tilEnv.googleSetup
+        let loginWithGithub = Environment.tilEnv.githubSetup
     }
     
     func loginHandler(_ req: Request) -> EventLoopFuture<View> {
@@ -175,7 +177,7 @@ struct HomeWebController: RouteCollection {
                 return resetToken.save(on: req.db).flatMap {
                     
                     guard let senderEmail = Environment.tilEnv.SENDGRID_SENDER_EMAIL,
-                          Environment.tilEnv.SENDGRID_API_KEY != nil else {
+                          Environment.tilEnv.sendgridSetup else {
                         return req.eventLoop.future(error: "Mailing is not set. the link would have been \(resetTokenLink). I know you're not a bad person and won't user it in a bad way !")
                     }
                     

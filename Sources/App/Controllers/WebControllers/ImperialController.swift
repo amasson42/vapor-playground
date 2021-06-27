@@ -6,9 +6,8 @@ import ImperialGitHub
 struct ImperialController: RouteCollection {
     func boot(routes: RoutesBuilder) throws {
         
-        if let googleCallback = Environment.tilEnv.GOOGLE_CALLBACK_URL,
-           Environment.tilEnv.GOOGLE_CLIENT_ID != nil,
-           Environment.tilEnv.GOOGLE_CLIENT_SECRET != nil {
+        if Environment.tilEnv.googleSetup,
+            let googleCallback = Environment.tilEnv.GOOGLE_CALLBACK_URL {
             do {
                 try routes.oAuth(
                     from: Google.self,
@@ -21,9 +20,8 @@ struct ImperialController: RouteCollection {
             }
         }
         
-        if let githubCallback = Environment.tilEnv.GITHUB_CALLBACK_URL,
-           Environment.tilEnv.GITHUB_CLIENT_ID != nil,
-           Environment.tilEnv.GITHUB_CLIENT_SECRET != nil {
+        if Environment.tilEnv.githubSetup,
+            let githubCallback = Environment.tilEnv.GITHUB_CALLBACK_URL {
             do {
                 try routes.oAuth(
                     from: GitHub.self,
