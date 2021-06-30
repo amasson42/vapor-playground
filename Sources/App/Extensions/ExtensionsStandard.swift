@@ -72,13 +72,17 @@ public enum ShellInput {
     
     var asAny: Any {
         switch self {
-        case .pipe(let p): return p
-        case .fileHandle(let fh): return fh
+            case .pipe(let p): return p
+            case .fileHandle(let fh): return fh
         }
     }
 }
 
-public typealias ShellResult = (stdout: String, stderr: String, code: Int32)
+public struct ShellResult: Codable {
+    public let stdout: String
+    public let stderr: String
+    public let statusCode: Int32
+}
 
 /// Asyncronously start a shell command
 /// - Parameters:
@@ -88,7 +92,8 @@ public typealias ShellResult = (stdout: String, stderr: String, code: Int32)
 ///   - completion: The completion handler called after the
 /// - Throws: Unix error occuring during process
 /// - Returns: The `Process` instance that will execute the command.
-/// To simplify syncronous call with the syntax
+///
+/// To use it in syncronous way, call with the syntax
 /// `shell("sleep 1; echo hello world").waitUntilExit()`
 @discardableResult
 public func shell(_ command: String, shellPath: String = "/bin/bash", stdin: ShellInput? = nil, completion: ((ShellResult) -> ())? = nil) throws -> Process {
@@ -120,8 +125,33 @@ public func shell(_ command: String, shellPath: String = "/bin/bash", stdin: She
     let stderr = String(data: stderrData, encoding: .utf8)!
     
     task.terminationHandler = { process in
-        completion?((stdout, stderr, task.terminationStatus))
+        completion?(ShellResult(
+                        stdout: stdout,
+                        stderr: stderr,
+                        statusCode: task.terminationStatus))
     }
     
     return task
+}
+
+import NIO
+
+/// Asyncronously start a shell command
+/// - Parameters:
+///   - command: The command to run in specified shell format
+///   - shellPath: Path to the executable shell (default is /bin/bash)
+///   - stdin: The standard input send with the command
+///   - eventLoop: An event loop to run the async call on
+/// - Throws: Unix error occuring during process
+/// - Returns: The `EventLoopFuture` promised to recieve the result of the command
+public func shell(
+    _ command: String,
+    shellPath: String = "/bin/bash",
+    stdin: ShellInput? = nil,
+    on eventLoop: EventLoop) throws -> EventLoopFuture<ShellResult> {
+    let promise = eventLoop.makePromise(of: ShellResult.self)
+    try shell(command, shellPath: shellPath, stdin: stdin) { result in
+        promise.succeed(result)
+    }
+    return promise.futureResult
 }

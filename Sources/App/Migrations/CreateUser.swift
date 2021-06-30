@@ -41,10 +41,13 @@ struct CreateUser_v110: Migration {
 struct CreateUser_v120: Migration {
 
     func prepare(on database: Database) -> EventLoopFuture<Void> {
-        database.enum(User.v120.userTypeName, reflecting: UserType.self)
-            .create().flatMap { userType in
+        database.enum(UserType.v120.name)
+            .case(UserType.v120.admin)
+            .case(UserType.v120.standard)
+            .case(UserType.v120.restricted)
+            .create().flatMap { userTypeEnum in
             database.schema(User.v100.schema)
-                .field(User.v120.userType, userType, .required, .sql(.default(UserType.standard.rawValue)))
+                .field(User.v120.userType, userTypeEnum, .required, .sql(.default(UserType.v120.standard)))
                 .field(User.v120.createdAt, .datetime)
                 .field(User.v120.deletedAt, .datetime)
                 .update()
@@ -58,7 +61,7 @@ struct CreateUser_v120: Migration {
             .deleteField(User.v120.userType)
             .update()
             .flatMap {
-                database.enum(User.v120.userTypeName).delete()
+                database.enum(UserType.v120.name).delete()
             }
     }
 
@@ -84,7 +87,16 @@ extension User {
         static let createdAt: FieldKey = "created_at"
         static let deletedAt: FieldKey = "deleted_at"
         static let userType: FieldKey = "userType"
-        static let userTypeName = "userType"
+    }
+}
+
+extension UserType {
+    enum v120 {
+        static let name = "userType"
+        
+        static let admin = "admin"
+        static let standard = "standard"
+        static let restricted = "restricted"
     }
 }
 

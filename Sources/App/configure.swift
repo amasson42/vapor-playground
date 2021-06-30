@@ -14,6 +14,7 @@ public func configure(_ app: Application) throws {
     app.middleware.use(LogMiddleware())
     
     app.middleware.use(FileMiddleware(publicDirectory: app.directory.publicDirectory))
+    app.sessions.use(.redis)
     app.middleware.use(app.sessions.middleware)
     
     for dir in TILEnv.dynamicDirectories {

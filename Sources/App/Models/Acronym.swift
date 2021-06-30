@@ -1,7 +1,7 @@
 import Vapor
 import Fluent
 
-final class Acronym: Model, Content {
+final class Acronym: Model {
     static let schema = v100.schema
     
     @ID
@@ -36,4 +36,27 @@ final class Acronym: Model, Content {
         self.$user.id = userID
     }
     
+}
+
+// TODO: Find why it is not being executed
+extension Acronym: Content {
+    func beforeEncode() throws {
+        if self.short.lowercased().contains(where: { !self.long.lowercased().contains($0) }) {
+            print("\(self.short) cannot be an acronym of \(self.long)")
+            throw Abort(.badRequest, reason: "\(self.short) cannot be an acronym of \(self.long)")
+        } else {
+            print("encoding: \(self.short): \(self.long)")
+        }
+        // Before Encoding to make sure the data are correct
+    }
+    
+    func afterDecode() throws {
+        if self.short.lowercased().contains(where: { !self.long.lowercased().contains($0) }) {
+            print("\(self.short) cannot be an acronym of \(self.long)")
+            throw Abort(.badRequest, reason: "\(self.short) cannot be an acronym of \(self.long)")
+        } else {
+            print("decoded: \(self.short): \(self.long)")
+        }
+        // After Decoding
+    }
 }
