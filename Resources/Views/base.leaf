@@ -39,6 +39,9 @@
                 <li class="nav-item #if(title == "Categories"): active #endif">
                     <a href="/categories" class="nav-link">Categories</a>
                 </li>
+                <li class="nav-item #if(title == "Chat"): active #endif">
+                    <a href="/chat" class="nav-link">Chat</a>
+                </li>
             </ul>
             #if(userLoggedIn):
             <form class="form-inline" action="/logout" method="POST">

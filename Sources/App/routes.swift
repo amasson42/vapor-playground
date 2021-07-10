@@ -23,6 +23,7 @@ func routes(_ app: Application) throws {
     try web.register(collection: AcronymsWebController())
     try web.register(collection: UsersWebController())
     try web.register(collection: CategoriesWebController())
+    try web.register(collection: ChatWebController())
     
     // As app so the login is not required
     try app.register(collection: ImperialController())

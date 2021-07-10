@@ -155,3 +155,34 @@ public func shell(
     }
     return promise.futureResult
 }
+
+
+final class WeakBox<T: AnyObject> {
+    weak var unbox: T?
+
+    init(_ value: T) {
+        self.unbox = value
+    }
+}
+
+struct MemoryAddress<T>: CustomStringConvertible {
+    let intValue: Int
+
+    init(of structPointer: UnsafePointer<T>) {
+        intValue = Int(bitPattern: structPointer)
+    }
+
+    var description: String {
+        let length = 2 + 2 * MemoryLayout<UnsafeRawPointer>.size
+        return String(format: "%0\(length)p", intValue)
+    }
+
+}
+
+extension MemoryAddress where T: AnyObject {
+
+    init(of classInstance: T) {
+        intValue = unsafeBitCast(classInstance, to: Int.self)
+    }
+
+}

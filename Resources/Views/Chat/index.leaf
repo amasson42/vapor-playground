@@ -1,0 +1,19 @@
+#extend("base"):
+
+#export("stylesheet"): #endexport
+
+#export("content"):
+
+<h1>#(title)</h1>
+
+<ul id="chatList">
+    
+</ul>
+
+#endexport
+
+#export("scripts"):
+
+#endexport
+
+#endextend
