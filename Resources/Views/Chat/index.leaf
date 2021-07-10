@@ -6,14 +6,51 @@
 
 <h1>#(title)</h1>
 
+<h4 id="stater">Pending...</h4>
+
 <ul id="chatList">
     
 </ul>
 
+<input id="messageInput" type="text" placeholder="message">
+<button onclick="sendMessage()">Send</button>
+
 #endexport
 
 #export("scripts"):
+<script>
 
+    let stater = document.getElementById("stater");
+    let socket = new WebSocket("ws://localhost:8080/chat/socket");
+
+    socket.onopen = function(e) {
+        stater.innerText = "[connected]"
+    };
+
+    socket.onmessage = function(event) {
+        let node = document.createElement("li");
+        node.appendChild(document.createTextNode(event.data));
+        document.getElementById("chatList").appendChild(node);
+    };
+
+    socket.onclose = function(event) {
+        if (event.wasClean) {
+            stater.innerText = `[close] Connection closed cleanly, code=${event.code} reason=${event.reason}`;
+        } else {
+            stater.innerText = '[close] Connection died';
+        }
+    };
+
+    socket.onerror = function(error) {
+        stater.innerText += `[error] ${error.message}`;
+    };
+
+    function sendMessage() {
+        let text = document.getElementById('messageInput').value;
+        socket.send(text);
+    }
+
+</script>
 #endexport
 
 #endextend

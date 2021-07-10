@@ -1,11 +1,13 @@
 import Vapor
 import Leaf
 
-fileprivate var chatSockets: [WeakBox<WebSocket>] = []
-
 struct ChatWebController: RouteCollection {
-
-
+    
+    let chatSockets = ClassBox<[WeakBox<WebSocket>]>([])
+    var activeChatSockets: [WebSocket] {
+        self.chatSockets.unbox.compactMap(\.unbox).filter(\.isActive)
+    }
+    
     func boot(routes: RoutesBuilder) {
         
         let group = routes.grouped("chat")
@@ -31,17 +33,21 @@ struct ChatWebController: RouteCollection {
     }
 
     func webSocketHandler(_ req: Request, webSocket: WebSocket) {
-        chatSockets.append(WeakBox(webSocket))
+        
+        let username = req.auth.get(User.self)?.name ?? "<unknown>"
+        self.chatSockets.unbox.append(WeakBox(webSocket))
         webSocket.onText { ws, text in
-            req.logger.info("[\(MemoryAddress(of: webSocket))][\(MemoryAddress(of: ws))]: \(text)")
+            self.activeChatSockets.forEach {
+                $0.send("\(username): \(text)")
+            }
         }
 
     }
 
     func listSocketsHandler(_ req: Request) -> [String] {
-        chatSockets.map { wsBox in
+        self.chatSockets.unbox.map { wsBox in
             if let ws = wsBox.unbox {
-                return "\(MemoryAddress(of: ws))\(ws.isClosed ? "-X" : "")"
+                return ws.isClosed ? "<closed>" : "\(MemoryAddress(of: ws))"
             } else {
                 return "<nil>"
             }

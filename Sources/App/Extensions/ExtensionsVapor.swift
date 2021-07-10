@@ -27,3 +27,11 @@ public extension Database {
     }
 
 }
+
+extension WebSocket {
+    
+    var isActive: Bool {
+        !isClosed
+    }
+    
+}

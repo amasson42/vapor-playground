@@ -156,6 +156,13 @@ public func shell(
     return promise.futureResult
 }
 
+final class ClassBox<T> {
+    var unbox: T
+    
+    init(_ value: T) {
+        self.unbox = value
+    }
+}
 
 final class WeakBox<T: AnyObject> {
     weak var unbox: T?
