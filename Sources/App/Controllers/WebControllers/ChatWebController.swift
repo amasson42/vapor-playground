@@ -3,7 +3,7 @@ import Leaf
 
 struct ChatWebController: RouteCollection {
     
-    let chatSockets = ClassBox<[WeakBox<WebSocket>]>([])
+    let chatSockets = ClassBox<Set<WeakBox<WebSocket>>>([])
     var activeChatSockets: [WebSocket] {
         self.chatSockets.unbox.compactMap(\.unbox).filter(\.isActive)
     }
@@ -35,11 +35,15 @@ struct ChatWebController: RouteCollection {
     func webSocketHandler(_ req: Request, webSocket: WebSocket) {
         
         let username = req.auth.get(User.self)?.name ?? "<unknown>"
-        self.chatSockets.unbox.append(WeakBox(webSocket))
+        self.chatSockets.unbox.insert(WeakBox(webSocket))
         webSocket.onText { ws, text in
             self.activeChatSockets.forEach {
                 $0.send("\(username): \(text)")
             }
+        }
+        
+        webSocket.onClose.whenComplete { result in
+            self.chatSockets.unbox.remove(WeakBox(webSocket))
         }
 
     }

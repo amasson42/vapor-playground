@@ -164,12 +164,24 @@ final class ClassBox<T> {
     }
 }
 
-final class WeakBox<T: AnyObject> {
-    weak var unbox: T?
+final class WeakBox<T: AnyObject>: Hashable {
+    
+    private(set) weak var unbox: T?
+    private let addr: Int
 
     init(_ value: T) {
         self.unbox = value
+        self.addr = MemoryAddress(of: value).intValue
     }
+    
+    static func == (lhs: WeakBox<T>, rhs: WeakBox<T>) -> Bool {
+        return lhs.addr == rhs.addr
+    }
+    
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(addr)
+    }
+    
 }
 
 struct MemoryAddress<T>: CustomStringConvertible {
