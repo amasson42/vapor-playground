@@ -14,6 +14,7 @@ func routes(_ app: Application) throws {
     try api.register(collection: UsersController())
     try api.register(collection: CategoriesController())
     try api.register(collection: PokemonsController())
+    try api.register(collection: StreamexController())
     
     // MARK: Web
     
